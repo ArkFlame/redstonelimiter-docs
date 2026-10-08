@@ -1,39 +1,53 @@
-name: Publish documentation
+name: Publish documentation (Astro)
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
+# Repository Settings > Pages > Build and deployment > Source MUST be "GitHub Actions".
+# Do not configure "Deploy from a branch": that invokes Jekyll on *.astro source files.
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Check out docs source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install dependencies
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Install Astro dependencies
         run: npm install --no-audit --no-fund
       - name: Verify docs against source snapshot
         run: npm test && npm run check:source
-      - name: Build static site
+      - name: Build Astro static pages
         run: npm run build
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Verify compiled Pages output
+        run: npm run verify:pages
+      - name: Upload compiled Astro site (never repository source)
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist/
+
   deploy:
+    runs-on: ubuntu-latest
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
-      - id: deployment
+      - name: Deploy static site
+        id: deployment
         uses: actions/deploy-pages@v4
