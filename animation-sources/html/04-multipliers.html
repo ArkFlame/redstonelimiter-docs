@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4 · Preset and TPS multipliers to effective max</title>
+<style>
+html,body{margin:0;background:#0e1116}
+.stage{width:min(100vw,1280px);aspect-ratio:16/9;margin:0 auto;position:relative;overflow:hidden}
+svg{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<div class="stage"><svg id="s" viewBox="0 0 1280 720" role="img" aria-label="4 · Preset and TPS multipliers to effective max"></svg></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('s');
+const C={bg:'#0e1116',panel:'#161b23',line:'#283041',fg:'#e6e9f0',muted:'#8b94a7',ok:'#4ade80',block:'#f87171',accent:'#60a5fa',warn:'#fbbf24'};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const easeOut=k=>1-Math.pow(1-k,3);
+function node(tag,attrs,parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in (attrs||{})) e.setAttribute(k,String(attrs[k]));
+  (parent||svg).appendChild(e);
+  return e;
+}
+function rect(x,y,w,h,a){return node('rect',Object.assign({x,y,width:w,height:h},a||{}));}
+function line(x1,y1,x2,y2,a){return node('line',Object.assign({x1,y1,x2,y2},a||{}));}
+function circle(cx,cy,r,a){return node('circle',Object.assign({cx,cy,r},a||{}));}
+function poly(pts,a){return node('polyline',Object.assign({points:pts.map(p=>p[0]+','+p[1]).join(' ')},a||{}));}
+function text(x,y,s,o){
+  o=o||{};
+  const e=node('text',{x,y,'font-size':o.size||18,'font-weight':o.weight||400,fill:o.fill||C.fg,
+    'font-family':o.mono?'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace':'system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+    'text-anchor':o.anchor||'start'});
+  e.textContent=s;
+  return e;
+}
+
+// Module 4: preset and TPS multipliers. Mirrors ActivityPolicy.effectiveMaxActivations and TpsScalingPolicy.multiplier.
+const LOOP=14;
+const BASE=5;
+const PRESETS=[['STRICT',1.0],['BALANCED',1.5],['LENIENT',2.0]];
+const tpsMult=v=>v<=16?1.0:(v>=19.5?2.0:1.0+(v-16)/(19.5-16));
+const effective=(base,p,m)=>{ if(base===0) return 0; return Math.max(1,Math.ceil(base*p*m)); };
+const tpsAt=t=>17.2+3.0*Math.cos(2*Math.PI*t/LOOP);
+const XV=v=>90+(v-12)/9*550;
+const YM=m=>560-(m-0.5)/1.7*400;
+function draw(t){
+  text(60,52,'4 · Multipliers: preset × TPS scaling → effective max',{size:30,weight:700});
+  text(60,84,'Multipliers apply to max-activations only. They never change period duration, sustain, or sliding.',{size:16,fill:C.muted});
+
+  rect(80,120,580,470,{rx:12,fill:C.panel});
+  text(100,150,'TPS → multiplier',{size:18,weight:700});
+  for(let v=12;v<=20;v+=2) text(XV(v),586,v.toFixed(0),{size:14,fill:C.muted,anchor:'middle',mono:true});
+  for(const m of [0.5,1.0,1.5,2.0]) { line(90,YM(m),640,YM(m),{stroke:C.line}); text(78,YM(m)+5,m.toFixed(1)+'×',{size:14,fill:C.muted,anchor:'end',mono:true}); }
+  line(XV(16),160,XV(16),560,{stroke:C.muted,'stroke-dasharray':'5 5'});
+  line(XV(19.5),160,XV(19.5),560,{stroke:C.muted,'stroke-dasharray':'5 5'});
+  text(XV(16)-6,176,'degraded 16.0 → ×1.0',{size:13,fill:C.muted,anchor:'end'});
+  text(XV(19.5)+6,176,'healthy 19.5 → ×2.0',{size:13,fill:C.muted});
+  const pts=[];
+  for(let v=12;v<=21.0001;v+=0.1) pts.push([XV(v),YM(tpsMult(v))]);
+  poly(pts,{fill:'none',stroke:C.accent,'stroke-width':3});
+
+  const v=tpsAt(t), m=tpsMult(v);
+  line(XV(v),160,XV(v),560,{stroke:C.fg,'stroke-dasharray':'3 4'});
+  circle(XV(v),YM(m),9,{fill:C.warn,stroke:C.bg,'stroke-width':2});
+  text(XV(v)+14,YM(m)-14,'TPS '+v.toFixed(2),{size:15,mono:true});
+
+  const pi=Math.min(2,Math.floor(t/(LOOP/3)));
+  const [pname,pm]=PRESETS[pi];
+  const raw=BASE*pm*m;
+  const E=effective(BASE,pm,m);
+  text(700,150,'effective max = ceil(base × preset × tps)',{size:22,weight:700});
+  const rows=[
+    ['base (DEFAULT)',String(BASE)],
+    ['preset',pname+' ×'+pm.toFixed(1)],
+    ['tps multiplier','×'+m.toFixed(3)+' at '+v.toFixed(2)+' TPS'],
+    ['raw product',BASE+' × '+pm.toFixed(1)+' × '+m.toFixed(3)+' = '+raw.toFixed(3)],
+    ['effective max','ceil('+raw.toFixed(3)+') = '+E]
+  ];
+  rows.forEach((r,i)=>{
+    const y=200+i*40;
+    text(700,y,r[0],{size:18,fill:C.muted});
+    text(960,y,r[1],{size:18,mono:true,weight:i===4?700:400,fill:i===4?C.ok:C.fg});
+  });
+  rect(700,412,500,22,{rx:11,fill:C.line});
+  rect(700,412,500*clamp(E/20,0,1),22,{rx:11,fill:C.accent});
+  text(700,452,'bar scale 0 – 20 activations',{size:13,fill:C.muted});
+
+  text(700,492,'Effective max by preset (base '+BASE+')',{size:18,weight:700});
+  const cols=[16.0,17.75,19.5];
+  text(700,524,'preset',{size:15,fill:C.muted});
+  cols.forEach((cv,j)=>text(860+j*120,524,cv.toFixed(2)+' TPS',{size:15,fill:C.muted,anchor:'middle',mono:true}));
+  PRESETS.forEach(([n,p],i)=>{
+    const y=552+i*30; const cur=i===pi;
+    if(cur) rect(690,y-20,500,28,{rx:6,fill:C.accent,'fill-opacity':0.15});
+    text(700,y,n,{size:17,weight:cur?700:400,fill:cur?C.fg:C.muted});
+    cols.forEach((cv,j)=>text(860+j*120,y,String(effective(BASE,p,tpsMult(cv))),{size:17,anchor:'middle',mono:true,weight:cur?700:400}));
+  });
+  text(60,690,'Missing or invalid TPS uses ×1.0. Shipped config: STRICT is ×1.0, BALANCED ×1.5, LENIENT ×2.0. Scaling is enabled by default.',{size:15,fill:C.muted});
+  text(60,712,'Lower TPS gives a stricter (smaller) effective max, healthier TPS gives a looser one. Per TpsScalingPolicy.multiplier.',{size:14,fill:C.muted});
+}
+
+window.renderAt=function(t){
+  svg.replaceChildren();
+  draw(((t%LOOP)+LOOP)%LOOP);
+};
+if(!window.__manual){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+    renderAt(LOOP*0.5);
+  } else {
+    const t0=performance.now();
+    const tick=now=>{ renderAt((now-t0)/1000); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+}
+
+</script>
+</body>
+</html>

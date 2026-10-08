@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5 · Chunk policy gate: whitelist and quarantine</title>
+<style>
+html,body{margin:0;background:#0e1116}
+.stage{width:min(100vw,1280px);aspect-ratio:16/9;margin:0 auto;position:relative;overflow:hidden}
+svg{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<div class="stage"><svg id="s" viewBox="0 0 1280 720" role="img" aria-label="5 · Chunk policy gate: whitelist and quarantine"></svg></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('s');
+const C={bg:'#0e1116',panel:'#161b23',line:'#283041',fg:'#e6e9f0',muted:'#8b94a7',ok:'#4ade80',block:'#f87171',accent:'#60a5fa',warn:'#fbbf24'};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const easeOut=k=>1-Math.pow(1-k,3);
+function node(tag,attrs,parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in (attrs||{})) e.setAttribute(k,String(attrs[k]));
+  (parent||svg).appendChild(e);
+  return e;
+}
+function rect(x,y,w,h,a){return node('rect',Object.assign({x,y,width:w,height:h},a||{}));}
+function line(x1,y1,x2,y2,a){return node('line',Object.assign({x1,y1,x2,y2},a||{}));}
+function circle(cx,cy,r,a){return node('circle',Object.assign({cx,cy,r},a||{}));}
+function poly(pts,a){return node('polyline',Object.assign({points:pts.map(p=>p[0]+','+p[1]).join(' ')},a||{}));}
+function text(x,y,s,o){
+  o=o||{};
+  const e=node('text',{x,y,'font-size':o.size||18,'font-weight':o.weight||400,fill:o.fill||C.fg,
+    'font-family':o.mono?'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace':'system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+    'text-anchor':o.anchor||'start'});
+  e.textContent=s;
+  return e;
+}
+
+// Module 5: chunk policy gate. Mirrors RedstoneLimiterManager.tryActivate: disabled world → whitelist → quarantine → engine.
+const LOOP=14;
+const TL=[[0,'DEFAULT'],[3,'WHITELISTED'],[6,'QUARANTINED'],[9,'DEFAULT']];
+const CMDS=[{at:3,txt:'shift-left: whitelist on'},{at:6,txt:'shift-right: quarantine on (clears whitelist)'},{at:9,txt:'shift-right: quarantine off'}];
+const SIGNALS=[1.0,2.0,4.0,5.0,7.0,8.0,10.0,11.5,13.0];
+const CHUNK='world/12/-4';
+const stateAt=t=>{ let s='DEFAULT'; for(const [at,st] of TL) if(t>=at) s=st; return s; };
+const NODES={
+  sig:{x:40,w:230,label:'signal',sub:'redstone · dispense · piston'},
+  wl:{x:320,w:230,label:'whitelisted?',sub:'chunk in whitelist.chunks'},
+  qn:{x:600,w:250,label:'quarantined?',sub:'chunk in quarantine.manual-chunks'},
+  eng:{x:880,w:320,label:'4-scope engine',sub:'Block → Subchunk → Chunk → Region'}
+};
+const TARGET={
+  DEFAULT:{node:'eng',col:C.accent,out:'counted · scope limits apply'},
+  WHITELISTED:{node:'wl',col:C.ok,out:'allowed · telemetry only'},
+  QUARANTINED:{node:'qn',col:C.block,out:'BLOCKED · quarantine · telemetry only'}
+};
+function draw(t){
+  text(60,52,'5 · Chunk policy gate: whitelist and quarantine run before the engine',{size:30,weight:700});
+  text(60,84,'Disabled worlds bypass everything first. Each chunk is in exactly one state: DEFAULT, WHITELISTED, or QUARANTINED.',{size:16,fill:C.muted});
+
+  const st=stateAt(t);
+  Object.keys(NODES).forEach(k=>{
+    const n=NODES[k];
+    const hi=(k===TARGET[st].node)&&(TARGET[st].node!=='sig');
+    rect(n.x,170,n.w,96,{rx:14,fill:C.panel,stroke:hi?TARGET[st].col:C.line,'stroke-width':hi?3:2});
+    text(n.x+n.w/2,206,n.label,{size:20,weight:700,anchor:'middle'});
+    text(n.x+n.w/2,236,n.sub,{size:13,fill:C.muted,anchor:'middle'});
+  });
+  for(const [a,b] of [['sig','wl'],['wl','qn'],['qn','eng']]){
+    const A=NODES[a], B=NODES[b];
+    line(A.x+A.w,218,B.x,218,{stroke:C.line,'stroke-width':2});
+  }
+  const outs={wl:'ALLOW · telemetry only',qn:'BLOCK · QUARANTINE · telemetry only',eng:'counted · scope limits apply'};
+  Object.keys(outs).forEach(k=>{
+    const n=NODES[k];
+    text(n.x+n.w/2,300,outs[k],{size:14,fill:C.muted,anchor:'middle',mono:true});
+  });
+  text(60,330,'disabled-worlds: bypass all gates (no count, no block, no effect). Not shown in animation.',{size:14,fill:C.muted});
+
+  let sig=null;
+  for(const s of SIGNALS) if(t>=s) sig=s;
+  if(sig!==null && t-sig<1.4){
+    const sState=stateAt(sig);
+    const tg=TARGET[sState];
+    const T=NODES[tg.node];
+    const k=easeOut(clamp((t-sig)/0.9,0,1));
+    const tx=T.x+T.w/2;
+    const x=lerp(40+115,tx,k);
+    circle(x,218,11,{fill:tg.col});
+  }
+
+  const cur=TARGET[st];
+  const hiChunk=st==='DEFAULT'?C.line:(st==='WHITELISTED'?C.ok:C.block);
+  rect(60,380,320,110,{rx:14,fill:C.panel,stroke:hiChunk,'stroke-width':3});
+  text(80,416,CHUNK,{size:20,weight:700,mono:true});
+  text(80,452,'state: '+st,{size:22,weight:700,fill:hiChunk,mono:true});
+
+  text(420,398,'whitelist.chunks',{size:18,weight:700});
+  text(420,426,st==='WHITELISTED'?'["'+CHUNK+'"]':'[]',{size:18,mono:true,fill:st==='WHITELISTED'?C.ok:C.muted});
+  text(420,462,'quarantine.manual-chunks',{size:18,weight:700});
+  text(420,490,st==='QUARANTINED'?'["'+CHUNK+'"]':'[]',{size:18,mono:true,fill:st==='QUARANTINED'?C.block:C.muted});
+
+  text(800,398,'last change',{size:18,weight:700});
+  let lastCmd='none yet';
+  for(const c of CMDS) if(t>=c.at) lastCmd=c.txt;
+  text(800,426,lastCmd,{size:16,fill:C.muted});
+  text(800,462,'exclusive: a chunk is in at most one list',{size:15,fill:C.muted});
+  text(800,488,'automatic anti-lag never quarantines',{size:15,fill:C.muted});
+
+  line(80,580,1200,580,{stroke:C.line,'stroke-width':2});
+  for(let s=0;s<=14;s+=1) text(80+s*80,600,String(s)+' s',{size:12,fill:C.muted,anchor:'middle',mono:true});
+  for(const c of CMDS){
+    const x=80+c.at*80;
+    circle(x,580,6,{fill:C.warn});
+  }
+  line(80+t*80,560,80+t*80,590,{stroke:C.fg,'stroke-dasharray':'3 3'});
+  text(60,650,'Gate order matches RedstoneLimiterManager.tryActivate. Commands at 3 s, 6 s, 9 s: whitelist on, quarantine on, quarantine off.',{size:14,fill:C.muted});
+  text(60,676,'Quarantine blocks the whole chunk with LimitCause.QUARANTINE. Whitelisted chunks still record telemetry but never block.',{size:14,fill:C.muted});
+}
+
+window.renderAt=function(t){
+  svg.replaceChildren();
+  draw(((t%LOOP)+LOOP)%LOOP);
+};
+if(!window.__manual){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+    renderAt(LOOP*0.5);
+  } else {
+    const t0=performance.now();
+    const tick=now=>{ renderAt((now-t0)/1000); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+}
+
+</script>
+</body>
+</html>

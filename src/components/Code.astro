@@ -1,0 +1,4 @@
+---
+const { code, title='config.yml' } = Astro.props;
+---
+<div class="codeblock"><div class="codehead"><span>{title}</span><button class="copy" type="button" aria-label={`Copy ${title}`}>Copy</button></div><pre><code>{code.trim()}</code></pre></div>

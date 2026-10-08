@@ -1,0 +1,60 @@
+export const nav = [
+  { section: 'START HERE', items: [
+    { href: '/', label: 'Overview', icon: 'grid' },
+    { href: '/guide/', label: 'Getting started', icon: 'play' },
+    { href: '/how-it-works/', label: 'How limiting works', icon: 'activity' },
+  ]},
+  { section: 'CONFIGURATION', items: [
+    { href: '/configuration/', label: 'Every setting explained', icon: 'sliders' },
+    { href: '/examples/', label: 'Copy-ready examples', icon: 'code' },
+    { href: '/calculator/', label: 'Limit calculator', icon: 'calculator' },
+  ]},
+  { section: 'REFERENCE', items: [
+    { href: '/commands/', label: 'Commands & permissions', icon: 'terminal' },
+    { href: '/faq/', label: 'FAQ & troubleshooting', icon: 'help' },
+  ]},
+];
+export const source = 'RedstoneLimiter 3.0.1 / configuration v7 · uploaded source snapshot Oct 8, 2026';
+export const mat = [
+  ['DEFAULT',5,'Fallback for a block material without its own entry'],
+  ['REDSTONE_WIRE',12,'Redstone dust changes'],
+  ['REDSTONE_TORCH',8,'Torch power changes'],
+  ['REPEATER',8,'Repeater activity'],
+  ['COMPARATOR',8,'Comparator activity'],
+  ['OBSERVER',8,'Observer physics activity (deduplicated)'],
+  ['DISPENSER',3,'Dispenser attempts'],
+  ['DROPPER',3,'Dropper attempts'],
+  ['PISTON',3,'Normal piston attempts'],
+  ['STICKY_PISTON',3,'Sticky piston attempts'],
+  ['LEVER',5,'Lever-related redstone changes'],
+  ['BUTTON',6,'Button-related redstone changes'],
+  ['PRESSURE_PLATE',8,'Pressure plate changes'],
+  ['TRIPWIRE_HOOK',8,'Tripwire hook changes'],
+  ['DAYLIGHT_DETECTOR',6,'Daylight detector changes'],
+  ['DETECTOR_RAIL',8,'Detector rail changes'],
+  ['POWERED_RAIL',8,'Powered rail changes'],
+  ['ACTIVATOR_RAIL',8,'Activator rail changes'],
+  ['TRAPPED_CHEST',6,'Trapped chest changes'],
+  ['TARGET',8,'Target block changes'],
+  ['REDSTONE_LAMP',8,'Lamp changes'],
+  ['HOPPER',6,'Hopper-related redstone changes'],
+  ['NOTE_BLOCK',8,'Note block changes'],
+  ['SCULK_SENSOR',10,'Sculk sensor changes'],
+  ['CALIBRATED_SCULK_SENSOR',10,'Calibrated sculk sensor changes'],
+  ['LIGHTNING_ROD',5,'Lightning rod changes'],
+  ['COPPER_BULB',8,'Copper bulb changes'],
+  ['LECTERN',5,'Lectern changes']
+] as const;
+export const commands = [
+  ['/rl','Shows overall scope statistics','redstonelimiter.stats'],
+  ['/rl block','Block statistics and top active blocks','redstonelimiter.stats'],
+  ['/rl subchunk','Subchunk statistics','redstonelimiter.stats'],
+  ['/rl chunk','Chunk statistics and active chunks','redstonelimiter.stats'],
+  ['/rl chunk <world> <chunk-x> <chunk-z>','Open a specific chunk’s block statistics (in-game)','redstonelimiter.stats'],
+  ['/rl region','32×32-chunk region statistics','redstonelimiter.stats'],
+  ['/rl gui','Open the in-game control panel','redstonelimiter.admin'],
+  ['/rl reload','Reload settings after applying pending GUI edits','redstonelimiter.reload'],
+  ['/rl notifications','Toggle your block notifications','Configured notification permission'],
+  ['/rl tp <world> <x> <y> <z>','Teleport to a redstone problem location (player only)','Player only'],
+  ['/rl visit <server> <world> <x> <y> <z>','Cross-server travel if Redis/proxy support is configured','Configured notification permission'],
+] as const;

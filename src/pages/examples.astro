@@ -1,0 +1,33 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+import Code from '../components/Code.astro';
+---
+<DocsLayout title="Configuration examples" description="Copy-ready source-compatible RedstoneLimiter YAML examples to stop lag machines, tune pistons, prevent region-wide collateral and whitelist safe chunks.">
+<div class="page-head"><div class="eyebrow">CONFIG RECIPES / REAL YAML</div><h1 class="page-title">Copy-ready examples</h1><p class="lead">Each recipe solves one specific problem. Start with the least disruptive change and watch your machine statistics before tightening anything else.</p></div>
+<div class="callout"><strong>Don't replace your existing config with a partial snippet.</strong> The snippets show only the relevant YAML sections. Merge displayed keys into your working file and preserve unrelated settings. For a fresh setup, download a full valid configuration below. Always back up your working file first and run <code>/rl reload</code> afterwards.</div>
+<div class="grid-3" style="margin-bottom:40px"><a class="card" href="/examples/local-machines.yml" download><span class="mini-label">COMPLETE YAML</span><h3>Local machines ↓</h3><p>Block + subchunk thresholds, with chunk and region scopes disabled.</p></a><a class="card" href="/examples/aggregate-region.yml" download><span class="mini-label">COMPLETE YAML</span><h3>Aggregate region ↓</h3><p>Region limit 1024 instead of shipped default 96.</p></a><a class="card" href="/examples/relaxed-pistons.yml" download><span class="mini-label">COMPLETE YAML</span><h3>Relaxed pistons ↓</h3><p>Piston and sticky piston base limits 12.</p></a></div>
+<section class="prose" id="local"><div class="eyebrow">EXAMPLE 01 / RECOMMENDED STARTING POINT</div><h2>Stop a compact lag machine without limiting a huge region</h2><p>Use the precise block and subchunk limits, while leaving the larger aggregates off. This is a <strong>suggested starting example</strong>, not the source default and not a guaranteed best value for every network.</p>
+<Code title="config.yml — edited sections" code={`anti-lag:\n  preset: "STRICT"\n\nblocks:\n  enabled: true\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations:\n    DEFAULT: 5\n    PISTON: 3\n    STICKY_PISTON: 3\n    OBSERVER: 8\n\nsubchunks:\n  enabled: true\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations: 96\n\nchunks:\n  enabled: false\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations: 1024\n\nregions:\n  enabled: false\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations: 96`} />
+<p>The <code>blocks.max-activations</code> section shown is a <strong>partial material override</strong>. Keep the other material entries from your existing file unless you deliberately want their built-in/default behavior. Turning off chunks and regions does not turn off counting; those scopes still record telemetry.</p></section>
+<div class="divider"></div>
+<section class="prose" id="piston"><div class="eyebrow">EXAMPLE 02 / PROTECT NORMAL FARMS</div><h2>Allow more piston activity while keeping protection</h2><p>Sometimes a farm gets limited because one piston cycles often. Increase that individual material's base maximum. <strong>Other scopes must still have room</strong>, or they may block the same machine.</p>
+<Code code={`# Change these existing keys under blocks.max-activations:\nblocks:\n  max-activations:\n    PISTON: 12\n    STICKY_PISTON: 12`} />
+<p>With <code>STRICT</code> and healthy TPS scaling enabled, a base limit of 12 becomes an effective 24. At degraded TPS it remains 12. Use the <a href="/calculator/">calculator</a> to explore.</p></section>
+<div class="divider"></div>
+<section class="prose" id="region"><div class="eyebrow">EXAMPLE 03 / REGION-WIDE LAG</div><h2>Protect a whole region from aggregate activity</h2><p>When multiple chunks collectively produce too much activity, region limiting can help. <strong>Start higher than a very restrictive region-wide threshold</strong> if you don't want neighboring farms affected.</p>
+<Code code={`regions:\n  enabled: true\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations: 1024`} />
+<p>This <strong>example value is intentionally not the shipped default</strong>: the source default is 96, and a region encompasses 1,024 chunks. Check your own load profile first; a higher max is more permissive.</p></section>
+<div class="divider"></div>
+<section class="prose" id="whitelist"><div class="eyebrow">EXAMPLE 04 / EXCEPTIONS</div><h2>Whitelist a safe machine or exclude a whole world</h2>
+<Code code={`whitelist:\n  chunks:\n    - "world/3/-2"     # Chunk X=3, Z=-2 in world\n\ndisabled-worlds:\n  - "creative"         # Entire creative world is not monitored`} />
+<p>Use actual Bukkit world names and chunk coordinates. A <strong>whitelisted chunk</strong> still has activity recorded, but automatic limits do not block there. A <strong>disabled world</strong> skips all counting, blocking, effects and notifications.</p></section>
+<div class="divider"></div>
+<section class="prose" id="quarantine"><div class="eyebrow">EXAMPLE 05 / EMERGENCY ACTION</div><h2>Manually quarantine one chunk</h2>
+<Code code={`quarantine:\n  manual-chunks:\n    - "world/3/-2"`} />
+<p>This is a deliberate administrative restriction: it stays until removed. It overrides a whitelist entry for the same chunk. For temporary automatic restrictions, tune <code>max-activations</code>, <code>duration-millis</code>, and <code>sustain-millis</code> instead.</p></section>
+<div class="divider"></div>
+<section class="prose" id="tps"><div class="eyebrow">EXAMPLE 06 / PREDICTABLE MAXIMA</div><h2>Use fixed effective maxima regardless of TPS</h2>
+<Code code={`anti-lag:\n  preset: "STRICT"\n  tps-scaling:\n    enabled: false\n    degraded-tps: 16.0\n    healthy-tps: 19.5\n    min-multiplier: 1.0\n    max-multiplier: 2.0`} />
+<p>With <code>STRICT</code> and TPS scaling disabled, effective max is simply the base max. You are disabling automatic TPS responsiveness, not the limiter itself.</p>
+<div class="btn-row"><a href="/configuration/" class="button button-primary">Look up a setting →</a><a href="/commands/" class="button button-secondary">Apply with /rl reload</a></div></section>
+</DocsLayout>

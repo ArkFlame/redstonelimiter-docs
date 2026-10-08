@@ -1,0 +1,70 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+import Code from '../components/Code.astro';
+import {mat} from '../data/site';
+const scopeRows = [
+  ['enabled','true','When false, this scope does not threshold-block. It still records telemetry. Other enabled scopes can still block.'],
+  ['period.duration-millis','5000','Count attempts over 5,000 milliseconds (5 seconds). Each scope has its own duration.'],
+  ['period.sustain-millis','2000','Temporary time to remain blocked after an over-limit attempt; more attempts can extend it.'],
+  ['period.sliding','true','true counts in a rolling window; false uses fixed periods with resets.'],
+  ['max-activations','Scope-specific','The maximum attempts allowed in this scope per period, before multipliers. 0 disables the threshold for this scope.'],
+] as const;
+const globalRows = [
+  ['config-version','7','Schema marker for migration. Keep the generated value.'],
+  ['anti-lag.preset','STRICT','STRICT=1×, BALANCED=1.5×, LENIENT=2× applied to maximum counts.'],
+  ['anti-lag.maintenance-interval-ticks','100','Interval for cleaning up idle tracking states, in server ticks.'],
+  ['anti-lag.advanced.observer-dedup-millis','50','Deduplicates repeated observer physics activity over this many milliseconds.'],
+  ['anti-lag.advanced.idle-state-ttl-millis','30000','How long an inactive tracking state may remain before cleanup.'],
+  ['anti-lag.tps-scaling.enabled','true','When enabled, observed TPS changes effective activation limits.'],
+  ['anti-lag.tps-scaling.degraded-tps','16.0','TPS at or below which the lower-default multiplier applies.'],
+  ['anti-lag.tps-scaling.healthy-tps','19.5','TPS at or above which the higher-default multiplier applies.'],
+  ['anti-lag.tps-scaling.min-multiplier','1.0','Multiplier used at degraded TPS by default.'],
+  ['anti-lag.tps-scaling.max-multiplier','2.0','Multiplier used at healthy TPS by default.'],
+  ['gui.refresh-ticks','40','How often GUI statistics update, measured in server ticks.'],
+  ['whitelist.chunks','[]','Chunk references where automatic activity thresholds do not block (telemetry remains; separate piston push-size rule still applies). Format: world/chunkX/chunkZ.'],
+  ['quarantine.manual-chunks','[]','Administrator-controlled chunks that are always blocked until manually released. Same chunk reference format.'],
+  ['disabled-worlds','[]','Bukkit world names where all limiter counting, blocking, visual effects and notifications are skipped.'],
+  ['prevent_comparator_trapdoor_dupe','true','Blocks right-click toggling comparators directly above trapdoors to prevent the documented minecart-duplication interaction.'],
+  ['max_piston_push','12','Maximum number of blocks in a piston extension. Extension attempts above this number are cancelled independently of activity counts.'],
+  ['block_effect','SMOKE','Bukkit effect name shown at a blocked activation.'],
+  ['block_effect_data','4','Numeric effect data for the selected Bukkit effect.'],
+  ['notifications.enabled','true','Turns block-activity notifications on or off.'],
+  ['notifications.permission','redstonelimiter.notify','Permission node for receiving/toggling notifications.'],
+  ['notifications.global_cooldown_seconds','15','Global throttling between blocked-redstone notification attempts.'],
+  ['notifications.local_cooldown_seconds','60','Suppress repeated notifications from the same location/scope.'],
+  ['notifications.per_player_cooldown_millis','1000','Minimum delay between notifications delivered to one recipient.'],
+  ['notifications.message_cache_size','256','Maximum number of final rendered notification messages cached. 0 disables this cache.'],
+  ['notifications.cross_server.enabled','false','Enables optional Redis-based cross-server notification/travel support; requires external infrastructure.'],
+  ['notifications.cross_server.server_id','""','Server identity used when cross-server behavior is configured.'],
+  ['notifications.cross_server.redis.host','127.0.0.1','Redis connection host.'],
+  ['notifications.cross_server.redis.port','6379','Redis connection port.'],
+  ['notifications.cross_server.redis.password','""','Redis password if authentication is required. Do not commit secrets to public repositories.'],
+  ['notifications.cross_server.redis.database','0','Redis database index.'],
+  ['notifications.cross_server.redis.ssl','false','Use SSL/TLS for Redis transport.'],
+  ['notifications.cross_server.redis.notification_channel','redstonelimiter:blocked','Redis pub/sub channel for blocked-redstone notifications.'],
+  ['notifications.cross_server.redis.teleport_key_prefix','redstonelimiter:teleport:','Prefix for cross-server teleport intent keys.'],
+  ['notifications.cross_server.redis.teleport_ttl_seconds','45','Expiration in seconds for a pending cross-server teleport intent.']
+] as const;
+---
+<DocsLayout title="Configuration reference" description="Every RedstoneLimiter config.yml v7 key explained, including exact defaults, block, subchunk, chunk and region settings, materials, notifications and TPS scaling.">
+<div class="page-head"><div class="eyebrow">CONFIG REFERENCE / V7</div><h1 class="page-title">Every setting, explained.</h1><p class="lead">Your entire <code>config.yml</code> in human language. Search the exact setting name and understand what changing its value really does.</p></div>
+<div class="btn-row" style="margin-bottom:25px"><a class="button button-primary" href="/config.yml" download>↓ Download original config.yml</a><a class="button button-secondary" href="/examples/">View examples →</a></div>
+<div class="callout info"><strong>Source of truth:</strong> Defaults below match <code>src/main/resources/config.yml</code> from the uploaded RedstoneLimiter 3.0.1 source. Always edit the actual config on your server; the file available here is a default reference.</div>
+<div class="searchbox"><span aria-hidden="true">⌕</span><input type="search" id="config-filter" placeholder="Filter setting names, e.g. region, tps, cooldown…" aria-label="Filter configuration table" /></div>
+<section id="scopes"><div class="eyebrow">CORE SETTINGS</div><h2>The four limiting scopes</h2><p class="lead">Each of <code>blocks</code>, <code>subchunks</code>, <code>chunks</code> and <code>regions</code> has the same period-related keys. Material-specific maxima are stored under <code>blocks.max-activations.*</code>.</p>
+<div class="table-wrap"><table class="filtertable"><thead><tr><th>Setting suffix</th><th>Default</th><th>Meaning</th></tr></thead><tbody>{scopeRows.map(([key,def,desc])=><tr><td><code>{key}</code></td><td>{def}</td><td>{desc}</td></tr>)}</tbody></table></div>
+<div class="table-wrap"><table class="filtertable"><thead><tr><th>Scope</th><th>Enabled</th><th>Base max</th><th>Area</th></tr></thead><tbody><tr><td><code>blocks</code></td><td>true</td><td>Individual material thresholds below</td><td>One exact position</td></tr><tr><td><code>subchunks</code></td><td>true</td><td>96</td><td>16×16×16 blocks</td></tr><tr><td><code>chunks</code></td><td>true</td><td>1024</td><td>16×16 horizontal footprint</td></tr><tr><td><code>regions</code></td><td>true</td><td>96</td><td>32×32 chunks</td></tr></tbody></table></div>
+<div class="callout"><strong>Enabling regions does not “protect each block”.</strong> It activates an aggregate limit over a very large 512×512-block area. With a base maximum of 96 across all its chunks, you may affect unrelated farms. Individual block and subchunk scopes are more focused. <a href="/how-it-works/#diagram-01-scope-cascade">See the four-scope animation →</a></div>
+<Code code={`# Partial YAML example. Keep the other sections in your config.\nregions:\n  enabled: false\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations: 96`} />
+</section>
+<section id="material"><div class="eyebrow">BLOCK MATERIALS</div><h2>Built-in material thresholds</h2><p class="lead">These are base maximum activations for <strong>one individual block</strong> over its configured period. <code>DEFAULT</code> only applies when a material has no specific rule. Current settings canonicalize legacy and modern material aliases before looking up thresholds.</p><div class="table-wrap"><table class="filtertable"><thead><tr><th>Material key</th><th>Base max</th><th>What it applies to</th></tr></thead><tbody>{mat.map(([name,number,desc])=><tr><td><code>{name}</code></td><td><strong>{number}</strong></td><td>{desc}</td></tr>)}</tbody></table></div><div class="callout info"><strong>Not a block blacklist:</strong> setting <code>PISTON: 0</code> means no <em>individual piston activation threshold</em>. It does not disable the subchunk, chunk, region, or independent maximum piston push restrictions.</div></section>
+<section id="other"><div class="eyebrow">FULL KEY INDEX</div><h2>Global settings, maintenance, effects & notifications</h2><div class="table-wrap"><table class="filtertable"><thead><tr><th>Full YAML path</th><th>Default</th><th>Explanation</th></tr></thead><tbody>{globalRows.map(([key,def,desc])=><tr><td><code>{key}</code></td><td><code>{def}</code></td><td>{desc}</td></tr>)}</tbody></table></div><p class="small-note">Defaults are initial config values, not a recommended setting for every server. Redis connection fields are only relevant if optional cross-server notification support is enabled.</p></section>
+<div class="btn-row"><a href="/examples/" class="button button-primary">Configure a real use case →</a><a href="/how-it-works/" class="button button-secondary">Understand the mechanism</a></div>
+<script>
+const filter = document.querySelector('#config-filter') as HTMLInputElement;
+filter.addEventListener('input', () => {
+ const q = filter.value.trim().toLowerCase();
+ document.querySelectorAll('.filtertable tbody tr').forEach((row) => { (row as HTMLElement).classList.toggle('search-hidden', !row.textContent?.toLowerCase().includes(q)); });
+});
+</script>
+</DocsLayout>
