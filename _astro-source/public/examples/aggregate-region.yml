@@ -1,0 +1,127 @@
+# EXAMPLE, not shipped default: a more permissive region-wide aggregate limit.
+# Complete v7 configuration. Compare with your existing config first.
+config-version: 7
+
+anti-lag:
+  preset: "STRICT"
+  maintenance-interval-ticks: 100
+  advanced:
+    observer-dedup-millis: 50
+    idle-state-ttl-millis: 30000
+  tps-scaling:
+    enabled: true
+    degraded-tps: 16.0
+    healthy-tps: 19.5
+    min-multiplier: 1.0
+    max-multiplier: 2.0
+
+gui:
+  refresh-ticks: 40
+
+whitelist:
+  chunks: []
+
+quarantine:
+  # Manually quarantined chunks always override whitelist entries.
+  manual-chunks: []
+
+# Worlds where RedstoneLimiter will not count, block, cancel, apply effects, or notify.
+# Names are case-insensitive and must match Bukkit world names.
+disabled-worlds: []
+
+# Prevents the comparator/trapdoor interaction race used by minecart duplication setups.
+# When enabled, comparators directly above trapdoors cannot be right-click toggled.
+prevent_comparator_trapdoor_dupe: true
+
+blocks:
+  enabled: true
+  # Automatic anti-lag uses enabled + max-activations + period.duration-millis + period.sustain-millis + period.sliding.
+  # Sustain is temporary automatic blocking, not quarantine. Quarantine is manual only.
+  # sliding=true is rolling period; false is fixed period.
+  # 0 max-activations means unlimited for that scope/material. Preset/TPS multipliers affect max activations only.
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations:
+    DEFAULT: 5
+    REDSTONE_WIRE: 12
+    REDSTONE_TORCH: 8
+    REPEATER: 8
+    COMPARATOR: 8
+    OBSERVER: 8
+    DISPENSER: 3
+    DROPPER: 3
+    PISTON: 3
+    STICKY_PISTON: 3
+    LEVER: 5
+    BUTTON: 6
+    PRESSURE_PLATE: 8
+    TRIPWIRE_HOOK: 8
+    DAYLIGHT_DETECTOR: 6
+    DETECTOR_RAIL: 8
+    POWERED_RAIL: 8
+    ACTIVATOR_RAIL: 8
+    TRAPPED_CHEST: 6
+    TARGET: 8
+    REDSTONE_LAMP: 8
+    HOPPER: 6
+    NOTE_BLOCK: 8
+    SCULK_SENSOR: 10
+    CALIBRATED_SCULK_SENSOR: 10
+    LIGHTNING_ROD: 5
+    COPPER_BULB: 8
+    LECTERN: 5
+
+subchunks:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 96
+
+chunks:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 1024
+
+regions:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 1024
+
+max_piston_push: 12
+
+block_effect: "SMOKE"
+block_effect_data: 4
+
+notifications:
+  enabled: true
+  permission: "redstonelimiter.notify"
+  global_cooldown_seconds: 15
+  local_cooldown_seconds: 60
+  # Minimum delay before the same player receives another blocked-redstone notification.
+  # Protects hot redstone/piston paths when global cooldown is lowered or disabled.
+  per_player_cooldown_millis: 1000
+  # Number of rendered MiniMessage notification components cached by exact final message string.
+  # Set to 0 to disable. Keep bounded because coordinates make messages high-cardinality.
+  message_cache_size: 256
+  cross_server:
+    enabled: false
+    server_id: ""
+    redis:
+      host: "127.0.0.1"
+      port: 6379
+      password: ""
+      database: 0
+      ssl: false
+      notification_channel: "redstonelimiter:blocked"
+      teleport_key_prefix: "redstonelimiter:teleport:"
+      teleport_ttl_seconds: 45

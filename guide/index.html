@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101011" />
+  <meta name="description" content="Install RedstoneLimiter, understand the default config and start limiting Minecraft redstone machines safely." />
+  <link rel="canonical" href="https://redstonelimiter.arkflame.com/guide/" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" /><link rel="stylesheet" href="/assets/site.css" />
+  <meta property="og:title" content="Getting started | RedstoneLimiter Docs" />
+  <meta property="og:description" content="Install RedstoneLimiter, understand the default config and start limiting Minecraft redstone machines safely." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://redstonelimiter.arkflame.com/guide/" />
+  <title>Getting started | RedstoneLimiter Docs</title>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open documentation navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <a href="/" class="brand" aria-label="RedstoneLimiter documentation homepage">
+      <span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M3 15h5V8h4v8h4V6h5" stroke="#2c0c07" stroke-width="2.5" stroke-linejoin="round"/><circle cx="8" cy="15" r="2" fill="#ffe3c0"/><circle cx="16" cy="6" r="2" fill="#ffe3c0"/></svg></span>
+      RedstoneLimiter <span class="lighter">/ Docs</span>
+    </a>
+    <div class="top-spacer"></div>
+    <button class="navbar-search" id="open-search" aria-label="Search documentation">Search documentation <span aria-hidden="true"> &nbsp; ⌘ K</span></button>
+    <span class="version">3.0.1 · CONFIG V7</span>
+    <a class="toplink" href="https://github.com/arkflame/RedstoneLimiter" target="_blank" rel="noreferrer">GitHub ↗</a>
+  </header>
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Documentation pages">
+      <div><div class="sidebar-section">START HERE</div><a href="/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Overview</a><a href="/guide/" class="navlink" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Getting started</a><a href="/how-it-works/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>How limiting works</a></div><div><div class="sidebar-section">CONFIGURATION</div><a href="/configuration/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Every setting explained</a><a href="/examples/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Copy-ready examples</a><a href="/calculator/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Limit calculator</a></div><div><div class="sidebar-section">REFERENCE</div><a href="/commands/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Commands &amp; permissions</a><a href="/faq/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>FAQ &amp; troubleshooting</a></div>
+      <div class="side-bottom"><span class="mini-label">BUILT FROM SOURCE</span><div style="margin-top:8px">Documentation for the real configuration and current implementation, not a generic redstone tutorial.</div><a href="/config.yml" download style="display:inline-block;color:#efad8d;margin-top:12px">↓ Download default config</a></div>
+    </nav>
+    <main id="main" class="main"><div class="content">
+<div class="page-head"><div class="eyebrow">START HERE / 5 MINUTES</div><h1 class="page-title">Getting started</h1><p class="lead">From your first install to your first useful limits. No YAML experience required.</p></div>
+<div class="prose">
+<h2 id="setup">1. Install and open the config <a class="anchor" href="#setup">#</a></h2>
+<ol><li>Install the RedstoneLimiter plugin JAR in your server's <code>plugins/</code> directory.</li><li>Restart your Minecraft server so the plugin generates its files.</li><li>Open <code>plugins/RedstoneLimiter/config.yml</code> with a text editor.</li><li>Make a backup of your working configuration before experimenting.</li></ol>
+<div class="callout info"><strong>Starting from an existing server?</strong> Don't replace a customized config with the default file. The plugin supports older configuration migration. Review your existing values before changing them.</div>
+<h2 id="first-setting">2. Read your first limit <a class="anchor" href="#first-setting">#</a></h2>
+<div class="codeblock"><div class="codehead"><span>config.yml</span><button class="copy" type="button" aria-label="Copy config.yml">Copy</button></div><pre><code>blocks:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations:
+    DEFAULT: 5
+    PISTON: 3</code></pre></div>
+<p>This means the <strong>block limiter is active</strong>. An individual piston has a base limit of <strong>3 attempts over the last 5 seconds</strong>. The next attempt exceeds its base threshold. Temporary blocking lasts at least 2 seconds and can be extended by further over-limit attempts. Presets and TPS scaling can raise the actual allowed count.</p>
+<h2 id="scope">3. Decide what area to limit <a class="anchor" href="#scope">#</a></h2>
+<div class="grid-2"><div class="card"><div class="mini-label">PRECISE</div><h3>Block & subchunk</h3><p>Useful when one specific device or a compact machine is excessively active.</p></div><div class="card"><div class="mini-label">BROADER</div><h3>Chunk & region</h3><p>Catch many devices adding up; affects wider areas and can block unrelated machinery.</p></div></div>
+<p>A region here means <strong>32×32 chunks (512×512 blocks horizontally)</strong>, not one chunk or a Folia scheduler region. By default, the configured region limit is only 96 base activations over 5 seconds across the entire region. Read <a href="/how-it-works/">the spatial guide</a> before tightening it.</p>
+<h2 id="choose-preset">4. Choose a preset <a class="anchor" href="#choose-preset">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Preset</th><th>Base multiplier</th><th>Effect</th></tr></thead><tbody><tr><td><code>STRICT</code></td><td>1×</td><td>Uses your configured limit without preset relaxation.</td></tr><tr><td><code>BALANCED</code></td><td>1.5×</td><td>Raises allowed activations by 50% before rounding and TPS adjustment.</td></tr><tr><td><code>LENIENT</code></td><td>2×</td><td>Doubles the configured limit before TPS adjustment.</td></tr></tbody></table></div>
+<div class="callout"><strong>Important:</strong> TPS scaling is separately enabled by default. At healthy TPS, it may double allowed activations again. A base limit of 3 can therefore allow 6 activations under the STRICT preset at healthy TPS. <a href="/calculator/">Try the calculator.</a></div>
+<h2 id="save">5. Apply your changes and inspect problems <a class="anchor" href="#save">#</a></h2>
+<ol><li>Save <code>config.yml</code> with valid YAML indentation (spaces, not tabs).</li><li>Run <code>/rl reload</code> if you have <code>redstonelimiter.reload</code>.</li><li>Use <code>/rl gui</code> to inspect the in-game control panel, or <code>/rl chunk</code> to see statistics.</li><li>Watch blocked-activity notifications if you have <code>redstonelimiter.notify</code>.</li></ol>
+<p>The GUI offers chunk whitelist and <strong>manual quarantine</strong> controls. Never assume a machine is automatically permanently quarantined because it exceeded an activity threshold.</p>
+<div class="btn-row"><a href="/configuration/" class="button button-primary">Read the full config →</a><a href="/examples/" class="button button-secondary">See examples</a></div>
+</div>
+
+      <footer><span>© ArkFlame · RedstoneLimiter documentation</span><span>RedstoneLimiter 3.0.1 / configuration v7 · uploaded source snapshot Oct 8, 2026</span></footer>
+    </div></main>
+  </div>
+  <div id="search-panel" role="presentation" aria-hidden="true">
+    <div id="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <div id="search-head"><span id="search-title" class="mini-label">SEARCH</span><input id="search-input" autocomplete="off" placeholder="Search guides, settings, commands…" aria-label="Search documentation" /><button id="search-close" aria-label="Close search">Esc</button></div>
+      <div id="search-results" role="list"></div><div id="search-results-empty">No matching pages. Try “config”, “limits”, or “quarantine”.</div>
+    </div>
+  </div>
+  
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

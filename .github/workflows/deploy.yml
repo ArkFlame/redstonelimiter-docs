@@ -1,53 +1,26 @@
-name: Publish documentation (Astro)
-
+# This repository deploys from main/(root) with .nojekyll. GitHub Pages itself
+# publishes committed HTML. This workflow checks output; it DOES NOT deploy.
+name: Verify static GitHub Pages site
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
-# Repository Settings > Pages > Build and deployment > Source MUST be "GitHub Actions".
-# Do not configure "Deploy from a branch": that invokes Jekyll on *.astro source files.
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out docs source
+      - name: Checkout prebuilt site
         uses: actions/checkout@v4
-      - name: Set up Node.js
+      - name: Install Node.js (no npm install required)
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Install Astro dependencies
-        run: npm install --no-audit --no-fund
-      - name: Verify docs against source snapshot
-        run: npm test && npm run check:source
-      - name: Build Astro static pages
-        run: npm run build
-      - name: Verify compiled Pages output
-        run: npm run verify:pages
-      - name: Upload compiled Astro site (never repository source)
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: dist/
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy static site
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Rebuild static HTML without Astro/npm dependencies
+        run: python3 scripts/build-static-from-astro.py --source _astro-source --output .
+      - name: Ensure generated pages are committed
+        run: |
+          git diff --exit-code -- index.html 404.html guide how-it-works configuration examples calculator commands faq assets/site.css assets/site.js assets/diagrams.js assets/limitMath.mjs
+      - name: Verify GitHub Pages output
+        run: python3 scripts/verify-site.py

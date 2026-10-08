@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101011" />
+  <meta name="description" content="RedstoneLimiter commands, in-game GUI controls, permissions, statistics, notifications, chunk whitelist and quarantine actions." />
+  <link rel="canonical" href="https://redstonelimiter.arkflame.com/commands/" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" /><link rel="stylesheet" href="/assets/site.css" />
+  <meta property="og:title" content="Commands and permissions | RedstoneLimiter Docs" />
+  <meta property="og:description" content="RedstoneLimiter commands, in-game GUI controls, permissions, statistics, notifications, chunk whitelist and quarantine actions." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://redstonelimiter.arkflame.com/commands/" />
+  <title>Commands and permissions | RedstoneLimiter Docs</title>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open documentation navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <a href="/" class="brand" aria-label="RedstoneLimiter documentation homepage">
+      <span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M3 15h5V8h4v8h4V6h5" stroke="#2c0c07" stroke-width="2.5" stroke-linejoin="round"/><circle cx="8" cy="15" r="2" fill="#ffe3c0"/><circle cx="16" cy="6" r="2" fill="#ffe3c0"/></svg></span>
+      RedstoneLimiter <span class="lighter">/ Docs</span>
+    </a>
+    <div class="top-spacer"></div>
+    <button class="navbar-search" id="open-search" aria-label="Search documentation">Search documentation <span aria-hidden="true"> &nbsp; ⌘ K</span></button>
+    <span class="version">3.0.1 · CONFIG V7</span>
+    <a class="toplink" href="https://github.com/arkflame/RedstoneLimiter" target="_blank" rel="noreferrer">GitHub ↗</a>
+  </header>
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Documentation pages">
+      <div><div class="sidebar-section">START HERE</div><a href="/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Overview</a><a href="/guide/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Getting started</a><a href="/how-it-works/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>How limiting works</a></div><div><div class="sidebar-section">CONFIGURATION</div><a href="/configuration/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Every setting explained</a><a href="/examples/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Copy-ready examples</a><a href="/calculator/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Limit calculator</a></div><div><div class="sidebar-section">REFERENCE</div><a href="/commands/" class="navlink" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Commands &amp; permissions</a><a href="/faq/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>FAQ &amp; troubleshooting</a></div>
+      <div class="side-bottom"><span class="mini-label">BUILT FROM SOURCE</span><div style="margin-top:8px">Documentation for the real configuration and current implementation, not a generic redstone tutorial.</div><a href="/config.yml" download style="display:inline-block;color:#efad8d;margin-top:12px">↓ Download default config</a></div>
+    </nav>
+    <main id="main" class="main"><div class="content">
+<div class="page-head"><div class="eyebrow">REFERENCE / ADMINISTRATION</div><h1 class="page-title">Commands & permissions</h1><p class="lead">The main command is <code>/redstonelimiter</code>. You can use the shorter <code>/rl</code> or <code>/redstone</code> aliases.</p></div>
+<section><h2>Command reference</h2><div class="table-wrap"><table><thead><tr><th>Command</th><th>Action</th><th>Permission / restriction</th></tr></thead><tbody><tr><td><code>/rl</code></td><td>Shows overall scope statistics</td><td>redstonelimiter.stats</td></tr><tr><td><code>/rl block</code></td><td>Block statistics and top active blocks</td><td>redstonelimiter.stats</td></tr><tr><td><code>/rl subchunk</code></td><td>Subchunk statistics</td><td>redstonelimiter.stats</td></tr><tr><td><code>/rl chunk</code></td><td>Chunk statistics and active chunks</td><td>redstonelimiter.stats</td></tr><tr><td><code>/rl chunk &lt;world&gt; &lt;chunk-x&gt; &lt;chunk-z&gt;</code></td><td>Open a specific chunk’s block statistics (in-game)</td><td>redstonelimiter.stats</td></tr><tr><td><code>/rl region</code></td><td>32×32-chunk region statistics</td><td>redstonelimiter.stats</td></tr><tr><td><code>/rl gui</code></td><td>Open the in-game control panel</td><td>redstonelimiter.admin</td></tr><tr><td><code>/rl reload</code></td><td>Reload settings after applying pending GUI edits</td><td>redstonelimiter.reload</td></tr><tr><td><code>/rl notifications</code></td><td>Toggle your block notifications</td><td>Configured notification permission</td></tr><tr><td><code>/rl tp &lt;world&gt; &lt;x&gt; &lt;y&gt; &lt;z&gt;</code></td><td>Teleport to a redstone problem location (player only)</td><td>Player only</td></tr><tr><td><code>/rl visit &lt;server&gt; &lt;world&gt; &lt;x&gt; &lt;y&gt; &lt;z&gt;</code></td><td>Cross-server travel if Redis/proxy support is configured</td><td>Configured notification permission</td></tr></tbody></table></div><p class="small-note"><code>/rl menu</code> also works as a compatibility alias of <code>/rl gui</code>.</p></section>
+<section class="prose"><h2>How the control panel works</h2><p>Open <code>/rl gui</code> in game. The GUI shows active chunks and blocks, plus controls for whitelist, manual quarantine, presets, and limits.</p><div class="grid-2"><article class="card"><span class="mini-label">CHUNK VIEW</span><h3>Inspect a problem</h3><p>Click a chunk to view its individual active blocks. Shift-left-click a chunk to toggle its whitelist policy. Shift-right-click to toggle manual quarantine.</p></article><article class="card"><span class="mini-label">LIMITS VIEW</span><h3>Tune thresholds</h3><p>Change enabled state, maximum activations, duration, sustain and sliding mode separately for each scope. Block Max opens a dedicated per-material limits page.</p></article></div><div class="callout"><strong>Quarantine is manual only.</strong> It does not happen automatically when redstone activity exceeds a configured max. Quarantine also takes precedence over whitelist. <a href="/how-it-works/#diagram-05-chunk-policy">Watch the animated chunk-policy explanation →</a></div><h2>Permission nodes</h2><div class="table-wrap"><table><thead><tr><th>Node</th><th>Default</th><th>Purpose</th></tr></thead><tbody><tr><td><code>redstonelimiter.admin</code></td><td>OP</td><td>Open and operate the control panel</td></tr><tr><td><code>redstonelimiter.stats</code></td><td>OP</td><td>View statistics</td></tr><tr><td><code>redstonelimiter.reload</code></td><td>OP</td><td>Reload plugin configuration</td></tr><tr><td><code>redstonelimiter.notify</code></td><td>OP</td><td>Receive and toggle notifications (default configured node)</td></tr></tbody></table></div><p>The notification permission is configurable via <code>notifications.permission</code>. Cross-server travel requires extra setup; it is disabled by default.</p></section>
+
+      <footer><span>© ArkFlame · RedstoneLimiter documentation</span><span>RedstoneLimiter 3.0.1 / configuration v7 · uploaded source snapshot Oct 8, 2026</span></footer>
+    </div></main>
+  </div>
+  <div id="search-panel" role="presentation" aria-hidden="true">
+    <div id="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <div id="search-head"><span id="search-title" class="mini-label">SEARCH</span><input id="search-input" autocomplete="off" placeholder="Search guides, settings, commands…" aria-label="Search documentation" /><button id="search-close" aria-label="Close search">Esc</button></div>
+      <div id="search-results" role="list"></div><div id="search-results-empty">No matching pages. Try “config”, “limits”, or “quarantine”.</div>
+    </div>
+  </div>
+  
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

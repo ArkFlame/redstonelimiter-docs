@@ -1,0 +1,109 @@
+---
+import '../styles/global.css';
+import { nav, source } from '../data/site';
+const { title = 'Documentation', description = 'Learn to configure RedstoneLimiter for your Minecraft server.' } = Astro.props;
+const path = Astro.url.pathname;
+const canonical = new URL(path, Astro.site).toString();
+const searchIndex = [
+  ['Getting started','Install, reload and configure the plugin.','/guide/'],
+  ['How limiting works','Block, subchunk, chunk, region, periods and sustain.','/how-it-works/'],
+  ['Configuration reference','Explain every YAML setting with actual defaults.','/configuration/'],
+  ['Example configurations','Copy-ready configurations for farms and lag machines.','/examples/'],
+  ['Limit calculator','Effective threshold, TPS scaling and preset math.','/calculator/'],
+  ['Commands and permissions','GUI, statistics, notifications, whitelist and quarantine.','/commands/'],
+  ['FAQ','Why are machines blocked? What happens when limits are disabled?','/faq/'],
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101011" />
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <meta property="og:title" content={`${title} | RedstoneLimiter Docs`} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <title>{title} | RedstoneLimiter Docs</title>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open documentation navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <a href="/" class="brand" aria-label="RedstoneLimiter documentation homepage">
+      <span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M3 15h5V8h4v8h4V6h5" stroke="#2c0c07" stroke-width="2.5" stroke-linejoin="round"/><circle cx="8" cy="15" r="2" fill="#ffe3c0"/><circle cx="16" cy="6" r="2" fill="#ffe3c0"/></svg></span>
+      RedstoneLimiter <span class="lighter">/ Docs</span>
+    </a>
+    <div class="top-spacer"></div>
+    <button class="navbar-search" id="open-search" aria-label="Search documentation">Search documentation <span aria-hidden="true"> &nbsp; ⌘ K</span></button>
+    <span class="version">3.0.1 · CONFIG V7</span>
+    <a class="toplink" href="https://github.com/arkflame/RedstoneLimiter" target="_blank" rel="noreferrer">GitHub ↗</a>
+  </header>
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Documentation pages">
+      {nav.map(section => <div>
+        <div class="sidebar-section">{section.section}</div>
+        {section.items.map(item => <a href={item.href} class="navlink" aria-current={path === item.href ? 'page' : undefined}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>{item.label}</a>)}
+      </div>)}
+      <div class="side-bottom"><span class="mini-label">BUILT FROM SOURCE</span><div style="margin-top:8px">Documentation for the real configuration and current implementation, not a generic redstone tutorial.</div><a href="/config.yml" download style="display:inline-block;color:#efad8d;margin-top:12px">↓ Download default config</a></div>
+    </nav>
+    <main id="main" class="main"><div class="content"><slot />
+      <footer><span>© ArkFlame · RedstoneLimiter documentation</span><span>{source}</span></footer>
+    </div></main>
+  </div>
+  <div id="search-panel" role="presentation" aria-hidden="true">
+    <div id="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <div id="search-head"><span id="search-title" class="mini-label">SEARCH</span><input id="search-input" autocomplete="off" placeholder="Search guides, settings, commands…" aria-label="Search documentation" /><button id="search-close" aria-label="Close search">Esc</button></div>
+      <div id="search-results" role="list"></div><div id="search-results-empty">No matching pages. Try “config”, “limits”, or “quarantine”.</div>
+    </div>
+  </div>
+  <script define:vars={{ searchIndex }}>
+    const panel = document.getElementById('search-panel');
+    const input = document.getElementById('search-input');
+    const results = document.getElementById('search-results');
+    const empty = document.getElementById('search-results-empty');
+    const openButton = document.getElementById('open-search');
+    const closeButton = document.getElementById('search-close');
+    let focusBefore;
+    const render = () => {
+      const q = input.value.trim().toLowerCase();
+      const filtered = searchIndex.filter(([name, desc]) => (name + ' ' + desc).toLowerCase().includes(q));
+      results.replaceChildren();
+      empty.style.display = filtered.length ? 'none' : 'block';
+      filtered.forEach(([name, desc, url]) => {
+        const link = document.createElement('a'); link.className='search-result';link.href=url;link.setAttribute('role','listitem');
+        const label=document.createElement('span');label.textContent=name;
+        const sub=document.createElement('small');sub.textContent=desc;
+        link.append(label,sub); results.append(link);
+      });
+    };
+    const close = () => { panel.setAttribute('aria-hidden','true');document.body.style.overflow='';focusBefore?.focus(); };
+    const open = () => { focusBefore=document.activeElement;panel.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';input.value='';render();input.focus(); };
+    openButton.addEventListener('click',open);
+    closeButton.addEventListener('click',close);
+    input.addEventListener('input',render);
+    panel.addEventListener('click', e => { if(e.target===panel) close(); });
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='k'){e.preventDefault();open();}
+      if(e.key==='Escape'&&panel.getAttribute('aria-hidden')==='false')close();
+      if(e.key==='Tab'&&panel.getAttribute('aria-hidden')==='false'){
+        const elements=[input,closeButton,...results.querySelectorAll('a')];
+        if(!e.shiftKey&&document.activeElement===elements.at(-1)){e.preventDefault();elements[0].focus();}
+        if(e.shiftKey&&document.activeElement===elements[0]){e.preventDefault();elements.at(-1).focus();}
+      }
+    });
+    render();
+    const menu=document.getElementById('menu-toggle');const sidebar=document.getElementById('sidebar');
+    menu.addEventListener('click',()=>{const opened=sidebar.classList.toggle('open');menu.setAttribute('aria-expanded',String(opened));menu.setAttribute('aria-label',opened?'Close documentation navigation':'Open documentation navigation');});
+    document.addEventListener('click',e=>{if(innerWidth<=760&&!sidebar.contains(e.target)&&!menu.contains(e.target)){sidebar.classList.remove('open');menu.setAttribute('aria-expanded','false');}});
+    document.querySelectorAll('.copy').forEach(button=>button.addEventListener('click',async()=>{
+      const code=button.closest('.codeblock')?.querySelector('code')?.textContent||'';
+      try{await navigator.clipboard.writeText(code);button.textContent='Copied';setTimeout(()=>button.textContent='Copy',1300);}catch{button.textContent='Select code';}
+    }));
+  </script>
+</body>
+</html>

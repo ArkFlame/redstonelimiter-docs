@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1 · Signal path through the spatial scope cascade</title>
+<style>
+html,body{margin:0;background:#0e1116}
+.stage{width:min(100vw,1280px);aspect-ratio:16/9;margin:0 auto;position:relative;overflow:hidden}
+svg{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<div class="stage"><svg id="s" viewBox="0 0 1280 720" role="img" aria-label="1 · Signal path through the spatial scope cascade"></svg></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('s');
+const C={bg:'#0e1116',panel:'#161b23',line:'#283041',fg:'#e6e9f0',muted:'#8b94a7',ok:'#4ade80',block:'#f87171',accent:'#60a5fa',warn:'#fbbf24'};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const easeOut=k=>1-Math.pow(1-k,3);
+function node(tag,attrs,parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in (attrs||{})) e.setAttribute(k,String(attrs[k]));
+  (parent||svg).appendChild(e);
+  return e;
+}
+function rect(x,y,w,h,a){return node('rect',Object.assign({x,y,width:w,height:h},a||{}));}
+function line(x1,y1,x2,y2,a){return node('line',Object.assign({x1,y1,x2,y2},a||{}));}
+function circle(cx,cy,r,a){return node('circle',Object.assign({cx,cy,r},a||{}));}
+function poly(pts,a){return node('polyline',Object.assign({points:pts.map(p=>p[0]+','+p[1]).join(' ')},a||{}));}
+function text(x,y,s,o){
+  o=o||{};
+  const e=node('text',{x,y,'font-size':o.size||18,'font-weight':o.weight||400,fill:o.fill||C.fg,
+    'font-family':o.mono?'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace':'system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+    'text-anchor':o.anchor||'start'});
+  e.textContent=s;
+  return e;
+}
+
+// Module 1: signal path through the spatial scope cascade.
+// Demo maxima are illustrative. Evaluation mirrors CircuitActivityEngine.tryActivateWithLocation.
+const LOOP=12;
+const MAXV=[2,3,4,5];
+const LABEL=['Block','Subchunk','Chunk','Region'];
+const CX=[120,390,660,930], CW=230, CY=170, CH=300;
+const EVENTS=[{s:1.0,b:'A'},{s:3.0,b:'A'},{s:5.0,b:'A'},{s:7.0,b:'B'},{s:9.0,b:'C'}];
+const RES=(()=>{
+  const perBlock={}; let sub=0,chk=0,reg=0; let prev=[0,0,0,0];
+  return EVENTS.map(e=>{
+    perBlock[e.b]=(perBlock[e.b]||0)+1;
+    const vals=prev.slice(); vals[0]=perBlock[e.b];
+    let stop=-1;
+    if(vals[0]>MAXV[0]) stop=0;
+    else{
+      sub++; vals[1]=sub;
+      if(sub>MAXV[1]) stop=1;
+      else{
+        chk++; vals[2]=chk;
+        if(chk>MAXV[2]) stop=2;
+        else{ reg++; vals[3]=reg; if(reg>MAXV[3]) stop=3; }
+      }
+    }
+    const r={s:e.s,b:e.b,stop,vals};
+    prev=vals;
+    return r;
+  });
+})();
+function statusOf(r,i){ if(r.stop<0||i<r.stop) return 'pass'; if(i===r.stop) return 'block'; return 'skip'; }
+function draw(t){
+  let idx=-1; EVENTS.forEach((e,i)=>{ if(t>=e.s) idx=i; });
+  const cur=idx>=0?RES[idx]:null;
+  const settled=cur && t>=cur.s+0.9;
+  const shown=settled?cur.vals:(idx>0?RES[idx-1].vals:[0,0,0,0]);
+
+  text(60,58,'1 · Signal path: Block → Subchunk → Chunk → Region',{size:30,weight:700});
+  text(60,90,'Redstone transitions, dispensers and pistons are counted and can block. Observers are telemetry only and are never cancelled.',{size:16,fill:C.muted});
+
+  for(let i=0;i<4;i++){
+    const x=CX[i];
+    const st=settled?statusOf(cur,i):'idle';
+    const border=st==='block'?C.block:st==='pass'?C.ok:C.line;
+    rect(x,CY,CW,CH,{rx:16,fill:C.panel,stroke:border,'stroke-width':st==='idle'?2:3});
+    text(x+18,CY+40,LABEL[i],{size:24,weight:700});
+    text(x+18,CY+66,'max '+MAXV[i],{size:16,fill:C.muted,mono:true});
+    text(x+18,CY+160,String(shown[i]),{size:72,weight:700,mono:true,fill:shown[i]>MAXV[i]?C.block:C.fg});
+    rect(x+18,CY+190,CW-36,14,{rx:7,fill:C.line});
+    rect(x+18,CY+190,(CW-36)*clamp(shown[i]/MAXV[i],0,1),14,{rx:7,fill:shown[i]>MAXV[i]?C.block:C.accent});
+    const lab=st==='pass'?'recorded · pass':st==='block'?'recorded · BLOCKED':st==='skip'?'not reached':'';
+    text(x+18,CY+250,lab,{size:17,weight:600,fill:st==='idle'?C.muted:border});
+  }
+
+  rect(40,500,1180,2,{fill:C.line});
+  for(let i=0;i<4;i++) circle(CX[i]+CW/2,501,5,{fill:C.line});
+  if(cur && t>=cur.s && t<cur.s+1.6){
+    const k=easeOut(clamp((t-cur.s)/1.0,0,1));
+    const target=cur.stop<0?1215:CX[cur.stop]+CW/2;
+    const x=lerp(40,target,k);
+    circle(x,501,11,{fill:cur.stop>=0 && k>=1?C.block:C.accent});
+    text(x,482,'E'+(idx+1),{size:16,weight:700,anchor:'middle',fill:C.fg});
+  }
+
+  if(settled){
+    const head=cur.stop<0
+      ?'ALLOWED · recorded at all four scopes'
+      :'BLOCKED at '+LABEL[cur.stop]+' · '+cur.vals[cur.stop]+' > '+MAXV[cur.stop]+' · higher scopes not recorded';
+    text(60,570,'E'+(idx+1)+' · block '+cur.b+' · '+head,{size:22,weight:600,fill:cur.stop<0?C.ok:C.block});
+    const tail=(cur.stop>=0?'For redstone transitions the wire current reverts to its old value. ':'')+'Evaluation stops at the first blocking scope.';
+    text(60,600,tail,{size:16,fill:C.muted});
+  } else {
+    text(60,570,'Waiting for next signal…',{size:20,fill:C.muted});
+  }
+
+  for(let i=0;i<EVENTS.length;i++){
+    const x=120+i*150;
+    const r=RES[i];
+    const c=(t>=EVENTS[i].s)?(r.stop<0?C.ok:C.block):C.line;
+    circle(x,650,9,{fill:c,stroke:i===idx?C.fg:'none','stroke-width':2});
+    text(x,680,'E'+(i+1)+' '+EVENTS[i].b,{size:15,fill:C.muted,anchor:'middle',mono:true});
+  }
+  text(60,706,'Demo maxima are illustrative: Block 2, Subchunk 3, Chunk 4, Region 5. Shipped defaults: Block DEFAULT 5, Subchunk 96, Chunk 1024, Region 96.',{size:13,fill:C.muted});
+}
+
+window.renderAt=function(t){
+  svg.replaceChildren();
+  draw(((t%LOOP)+LOOP)%LOOP);
+};
+// Embedding bridge: pause offscreen animations and keep each frame isolated.
+const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+const embedded = window.parent !== window;
+let elapsedSeconds = LOOP * 0.5;
+let startedOnce = false;
+let running = false;
+let startedAt = 0;
+let frameHandle = 0;
+function frame(now) {
+  if (!running) return;
+  renderAt((elapsedSeconds + (now - startedAt) / 1000) % LOOP);
+  frameHandle = requestAnimationFrame(frame);
+}
+function playDiagram() {
+  if (running || window.__manual) return;
+  if (!startedOnce) {
+    elapsedSeconds = 0;
+    startedOnce = true;
+  }
+  running = true;
+  startedAt = performance.now();
+  frameHandle = requestAnimationFrame(frame);
+}
+function pauseDiagram() {
+  if (!running) return;
+  elapsedSeconds = (elapsedSeconds + (performance.now() - startedAt) / 1000) % LOOP;
+  running = false;
+  cancelAnimationFrame(frameHandle);
+  renderAt(elapsedSeconds);
+}
+// A mid-sequence frame is informative before scrolling or when motion is reduced.
+renderAt(elapsedSeconds);
+if (!embedded && !motionPreference.matches) playDiagram();
+window.addEventListener('message', (event) => {
+  if (!embedded || event.source !== window.parent) return;
+  const data = event.data;
+  if (!data || data.type !== 'redstonelimiter:playback') return;
+  if (data.play === true) playDiagram();
+  else if (data.play === false) pauseDiagram();
+});
+motionPreference.addEventListener('change', (event) => {
+  if (event.matches) {
+    pauseDiagram();
+    if (!startedOnce) renderAt(LOOP * 0.5);
+  } else if (!embedded) {
+    playDiagram();
+  }
+});
+
+</script>
+</body>
+</html>

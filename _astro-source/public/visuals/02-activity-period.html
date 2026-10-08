@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2 · Sliding bucket window vs fixed activity period</title>
+<style>
+html,body{margin:0;background:#0e1116}
+.stage{width:min(100vw,1280px);aspect-ratio:16/9;margin:0 auto;position:relative;overflow:hidden}
+svg{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<div class="stage"><svg id="s" viewBox="0 0 1280 720" role="img" aria-label="2 · Sliding bucket window vs fixed activity period"></svg></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('s');
+const C={bg:'#0e1116',panel:'#161b23',line:'#283041',fg:'#e6e9f0',muted:'#8b94a7',ok:'#4ade80',block:'#f87171',accent:'#60a5fa',warn:'#fbbf24'};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const easeOut=k=>1-Math.pow(1-k,3);
+function node(tag,attrs,parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in (attrs||{})) e.setAttribute(k,String(attrs[k]));
+  (parent||svg).appendChild(e);
+  return e;
+}
+function rect(x,y,w,h,a){return node('rect',Object.assign({x,y,width:w,height:h},a||{}));}
+function line(x1,y1,x2,y2,a){return node('line',Object.assign({x1,y1,x2,y2},a||{}));}
+function circle(cx,cy,r,a){return node('circle',Object.assign({cx,cy,r},a||{}));}
+function poly(pts,a){return node('polyline',Object.assign({points:pts.map(p=>p[0]+','+p[1]).join(' ')},a||{}));}
+function text(x,y,s,o){
+  o=o||{};
+  const e=node('text',{x,y,'font-size':o.size||18,'font-weight':o.weight||400,fill:o.fill||C.fg,
+    'font-family':o.mono?'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace':'system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+    'text-anchor':o.anchor||'start'});
+  e.textContent=s;
+  return e;
+}
+
+// Module 2: sliding bucket window vs fixed period. Mirrors SlidingWindowCounter and ActivityState (fixed branch).
+const LOOP=16;
+const W=5000, BUCKET=250, MAXD=6;
+const TIMES=[600,1000,1400,2100,2500,3700,4300,5200,6000,6400,7100,7900,8800,10200,11500,13000,14200,15100];
+const ALL=[];
+for(let k=-3;k<=2;k++) TIMES.forEach(x=>ALL.push(x+k*LOOP*1000));
+ALL.sort((a,b)=>a-b);
+const HIST=7000, X0=70, X1=1190, PX=(X1-X0)/HIST;
+const X=(now,ms)=>X1-(now-ms)*PX;
+function slidingCount(now){
+  let c=0;
+  for(const e of ALL){ if(e>now) break; const b=Math.floor(e/BUCKET)*BUCKET; if(b+BUCKET>now-W) c++; }
+  return c;
+}
+function fixedState(now){
+  let start=null,c=0;
+  for(const e of ALL){ if(e>now) break; if(start===null||e-start>=W){start=e;c=0;} c++; }
+  if(start===null) return null;
+  const expired=now-start>=W;
+  return {start,count:expired?0:c,expired};
+}
+function draw(t){
+  const now=t*1000;
+  text(60,52,'2 · Activity period: sliding bucket ring vs fixed period',{size:30,weight:700});
+  text(60,84,'duration '+W+' ms · bucket '+BUCKET+' ms = max(250, ceil('+W+'/256)) · ring '+(Math.ceil(W/BUCKET)+2)+' slots · demo max '+MAXD,{size:16,fill:C.muted});
+
+  const sc=slidingCount(now);
+  const BS=325, UNIT=22;
+  text(60,130,'SLIDING  (period.sliding = true)',{size:20,weight:700,fill:C.accent});
+  text(1190,130,'window count '+sc+' / max '+MAXD,{size:20,weight:700,anchor:'end',fill:sc>MAXD?C.block:C.ok,mono:true});
+  rect(X(now,now-W),145,X(now,now)-X(now,now-W),BS-145,{fill:C.accent,'fill-opacity':0.08});
+  const b0=Math.floor((now-HIST)/BUCKET)*BUCKET;
+  for(let b=b0;b<=now;b+=BUCKET){
+    const c=ALL.filter(e=>Math.floor(e/BUCKET)*BUCKET===b).length;
+    const inWin=b+BUCKET>now-W;
+    const x=X(now,b)+2, w=BUCKET*PX-4;
+    for(let k=0;k<c;k++){
+      rect(x,BS-(k+1)*UNIT,w,UNIT-4,{rx:3,fill:inWin?C.accent:C.muted,'fill-opacity':inWin?0.95:0.35});
+    }
+  }
+  line(X0,BS,X1,BS,{stroke:C.line,'stroke-width':2});
+  line(X0,BS-MAXD*UNIT,X1,BS-MAXD*UNIT,{stroke:C.warn,'stroke-dasharray':'8 6'});
+  text(X0,BS-MAXD*UNIT-8,'max '+MAXD,{size:15,fill:C.warn});
+
+  const fs=fixedState(now);
+  const BF=600;
+  text(60,400,'FIXED  (period.sliding = false)',{size:20,weight:700,fill:C.accent});
+  if(fs){
+    const xs=X(now,fs.start), xe=Math.min(X1,X(now,fs.start+W));
+    rect(xs,420,xe-xs,BF-420,{fill:C.accent,'fill-opacity':fs.expired?0.03:0.08,stroke:C.accent,'stroke-dasharray':'6 6'});
+    const lx=xs>900?xs-8:xs+8;
+    text(lx,440,'period start '+(fs.start/1000).toFixed(1)+' s',{size:14,fill:C.muted,mono:true,anchor:xs>900?'end':'start'});
+    text(1190,400,'period count '+fs.count+' / max '+MAXD+(fs.expired?' · expired, resets on next activation':''),{size:20,weight:700,anchor:'end',fill:fs.count>MAXD?C.block:C.ok,mono:true});
+  } else {
+    text(1190,400,'no open period',{size:20,anchor:'end',fill:C.muted});
+  }
+  for(const e of ALL){
+    if(e<now-HIST||e>now) continue;
+    const inP=fs && !fs.expired && e>=fs.start;
+    circle(X(now,e),BF-14,7,{fill:inP?C.accent:C.muted,'fill-opacity':inP?1:0.4});
+  }
+  line(X0,BF,X1,BF,{stroke:C.line,'stroke-width':2});
+
+  line(X1,140,X1,BF,{stroke:C.fg,'stroke-width':2,'stroke-dasharray':'4 4'});
+  for(let s=-7;s<=0;s++){
+    const ms=Math.floor(now/1000)*1000+s*1000;
+    if(ms<now-HIST) continue;
+    text(X(now,ms),BF+24,(s===0?'now':s+' s'),{size:14,fill:C.muted,anchor:'middle',mono:true});
+  }
+  text(60,690,'Sliding counts each 250 ms bucket whose end is after now − 5 s, so the window can include up to one extra bucket. Fixed counts from period start and resets on the first activation after start + 5 s.',{size:15,fill:C.muted});
+  text(60,712,'Dots mark activations in the fixed panel. Dimmed bars are outside the sliding window and are no longer counted.',{size:14,fill:C.muted});
+}
+
+window.renderAt=function(t){
+  svg.replaceChildren();
+  draw(((t%LOOP)+LOOP)%LOOP);
+};
+// Embedding bridge: pause offscreen animations and keep each frame isolated.
+const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+const embedded = window.parent !== window;
+let elapsedSeconds = LOOP * 0.5;
+let startedOnce = false;
+let running = false;
+let startedAt = 0;
+let frameHandle = 0;
+function frame(now) {
+  if (!running) return;
+  renderAt((elapsedSeconds + (now - startedAt) / 1000) % LOOP);
+  frameHandle = requestAnimationFrame(frame);
+}
+function playDiagram() {
+  if (running || window.__manual) return;
+  if (!startedOnce) {
+    elapsedSeconds = 0;
+    startedOnce = true;
+  }
+  running = true;
+  startedAt = performance.now();
+  frameHandle = requestAnimationFrame(frame);
+}
+function pauseDiagram() {
+  if (!running) return;
+  elapsedSeconds = (elapsedSeconds + (performance.now() - startedAt) / 1000) % LOOP;
+  running = false;
+  cancelAnimationFrame(frameHandle);
+  renderAt(elapsedSeconds);
+}
+// A mid-sequence frame is informative before scrolling or when motion is reduced.
+renderAt(elapsedSeconds);
+if (!embedded && !motionPreference.matches) playDiagram();
+window.addEventListener('message', (event) => {
+  if (!embedded || event.source !== window.parent) return;
+  const data = event.data;
+  if (!data || data.type !== 'redstonelimiter:playback') return;
+  if (data.play === true) playDiagram();
+  else if (data.play === false) pauseDiagram();
+});
+motionPreference.addEventListener('change', (event) => {
+  if (event.matches) {
+    pauseDiagram();
+    if (!startedOnce) renderAt(LOOP * 0.5);
+  } else if (!embedded) {
+    playDiagram();
+  }
+});
+
+</script>
+</body>
+</html>

@@ -1,10 +1,8 @@
+# Public HTML is checked into this repository intentionally. Do NOT ignore it.
 node_modules/
 dist/
 .astro/
-.env
-.env.*
-!.env.example
+__pycache__/
+*.pyc
 .DS_Store
 *.log
-.idea/
-.vscode/

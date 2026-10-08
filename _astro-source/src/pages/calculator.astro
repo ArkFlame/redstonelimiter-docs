@@ -1,0 +1,29 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+---
+<DocsLayout title="Limit calculator" description="Interactive RedstoneLimiter threshold calculator using the actual Java source formula and default TPS scaling behavior.">
+<div class="page-head"><div class="eyebrow">INTERACTIVE / SOURCE-ACCURATE</div><h1 class="page-title">Limit calculator</h1><p class="lead">See how many activations RedstoneLimiter allows before an over-limit attempt is blocked at a particular scope.</p></div>
+<div class="card"><div class="calculator-row"><label class="field">Configured max activations<input id="base" type="number" min="0" max="100000000" step="1" value="3" /></label><label class="field">Anti-lag preset<select id="preset"><option value="1">STRICT · 1×</option><option value="1.5">BALANCED · 1.5×</option><option value="2">LENIENT · 2×</option></select></label><label class="field">Measured TPS<input id="tps" type="number" min="0" max="20" step="0.1" value="19.5" /></label><label class="field">TPS scaling<select id="enabled"><option value="yes">Enabled (default)</option><option value="no">Disabled</option><option value="missing">TPS unavailable</option></select></label></div><div class="result-box" aria-live="polite"><div class="mini-label">EFFECTIVE MAX ACTIVATIONS</div><div class="result-number" id="result">6</div><div class="result-text" id="meaning">The first 6 attempts fit the effective threshold; attempt 7 exceeds it.</div><hr class="divider-thin"/><div class="result-example" id="formula">ceil(3 × 1 × 2) = 6</div></div></div>
+<div class="prose" style="margin-top:29px"><div class="callout info"><strong>What this calculator assumes:</strong> one scope and one activity period, no earlier sustained block, no other scope reaching its limit first, and an available TPS value unless you select otherwise. The plugin uses rolling or fixed window counters and may block sooner because of another scope.</div><h2>The exact rule</h2><p>The source uses <code>ceil(base × presetMultiplier × tpsMultiplier)</code>, except that a base max of <code>0</code> means the threshold is unlimited. There is no “blocks after N milliseconds” setting here: the duration counts activity, while sustain defines how long an over-limit scope remains temporarily blocked.</p><h2>Default TPS scaling</h2><p>When enabled, 16.0 TPS or less results in a 1× multiplier; 19.5 TPS or higher results in 2×. Intermediate values interpolate linearly. If TPS cannot be measured or scaling is off, the multiplier is 1×.</p><p>For your own custom <code>min-multiplier</code>, <code>max-multiplier</code>, <code>degraded-tps</code> or <code>healthy-tps</code> values, this first calculator intentionally models the source defaults only.</p><div class="btn-row"><a href="/examples/" class="button button-primary">See config examples →</a><a href="/how-it-works/" class="button button-secondary">Review scope behavior</a></div></div>
+<script>
+  import { effectiveMaxActivations, defaultTpsMultiplier } from '../lib/limitMath.mjs';
+  const base = document.getElementById('base') as HTMLInputElement;
+  const preset = document.getElementById('preset') as HTMLSelectElement;
+  const tps = document.getElementById('tps') as HTMLInputElement;
+  const enabled = document.getElementById('enabled') as HTMLSelectElement;
+  const result = document.getElementById('result') as HTMLDivElement;
+  const meaning = document.getElementById('meaning') as HTMLDivElement;
+  const formula = document.getElementById('formula') as HTMLDivElement;
+  const update = () => {
+    const b = Number(base.value), p = Number(preset.value), t = Number(tps.value);
+    if (!Number.isInteger(b) || b < 0 || b > 100000000 || !Number.isFinite(t) || t < 0 || t > 20){result.textContent='—';meaning.textContent='Enter a valid nonnegative integer max and TPS between 0 and 20.';formula.textContent='';return;}
+    const scaled = enabled.value==='yes';
+    const multiplier = defaultTpsMultiplier(enabled.value==='missing' ? undefined : t, scaled);
+    const total = effectiveMaxActivations(b, p, multiplier);
+    result.textContent=b===0 ? '∞' : total.toLocaleString('en-US');
+    meaning.textContent=b===0 ? 'Unlimited for this scope/material: it will never block solely due to its own max-activations threshold.' : `The first ${total.toLocaleString('en-US')} attempts are within this threshold; attempt ${(total+1).toLocaleString('en-US')} exceeds it.`;
+    formula.textContent=b===0?'0 means unlimited (a special rule)':`ceil(${b} × ${p} × ${Number(multiplier.toFixed(5))}) = ${total}`;
+  };
+  [base,preset,tps,enabled].forEach(el=>el.addEventListener('input',update));update();
+</script>
+</DocsLayout>

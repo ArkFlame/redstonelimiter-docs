@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101011" />
+  <meta name="description" content="Copy-ready source-compatible RedstoneLimiter YAML examples to stop lag machines, tune pistons, prevent region-wide collateral and whitelist safe chunks." />
+  <link rel="canonical" href="https://redstonelimiter.arkflame.com/examples/" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" /><link rel="stylesheet" href="/assets/site.css" />
+  <meta property="og:title" content="Configuration examples | RedstoneLimiter Docs" />
+  <meta property="og:description" content="Copy-ready source-compatible RedstoneLimiter YAML examples to stop lag machines, tune pistons, prevent region-wide collateral and whitelist safe chunks." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://redstonelimiter.arkflame.com/examples/" />
+  <title>Configuration examples | RedstoneLimiter Docs</title>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open documentation navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <a href="/" class="brand" aria-label="RedstoneLimiter documentation homepage">
+      <span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M3 15h5V8h4v8h4V6h5" stroke="#2c0c07" stroke-width="2.5" stroke-linejoin="round"/><circle cx="8" cy="15" r="2" fill="#ffe3c0"/><circle cx="16" cy="6" r="2" fill="#ffe3c0"/></svg></span>
+      RedstoneLimiter <span class="lighter">/ Docs</span>
+    </a>
+    <div class="top-spacer"></div>
+    <button class="navbar-search" id="open-search" aria-label="Search documentation">Search documentation <span aria-hidden="true"> &nbsp; ⌘ K</span></button>
+    <span class="version">3.0.1 · CONFIG V7</span>
+    <a class="toplink" href="https://github.com/arkflame/RedstoneLimiter" target="_blank" rel="noreferrer">GitHub ↗</a>
+  </header>
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Documentation pages">
+      <div><div class="sidebar-section">START HERE</div><a href="/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Overview</a><a href="/guide/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Getting started</a><a href="/how-it-works/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>How limiting works</a></div><div><div class="sidebar-section">CONFIGURATION</div><a href="/configuration/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Every setting explained</a><a href="/examples/" class="navlink" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Copy-ready examples</a><a href="/calculator/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Limit calculator</a></div><div><div class="sidebar-section">REFERENCE</div><a href="/commands/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>Commands &amp; permissions</a><a href="/faq/" class="navlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>FAQ &amp; troubleshooting</a></div>
+      <div class="side-bottom"><span class="mini-label">BUILT FROM SOURCE</span><div style="margin-top:8px">Documentation for the real configuration and current implementation, not a generic redstone tutorial.</div><a href="/config.yml" download style="display:inline-block;color:#efad8d;margin-top:12px">↓ Download default config</a></div>
+    </nav>
+    <main id="main" class="main"><div class="content">
+<div class="page-head"><div class="eyebrow">CONFIG RECIPES / REAL YAML</div><h1 class="page-title">Copy-ready examples</h1><p class="lead">Each recipe solves one specific problem. Start with the least disruptive change and watch your machine statistics before tightening anything else.</p></div>
+<div class="callout"><strong>Don't replace your existing config with a partial snippet.</strong> The snippets show only the relevant YAML sections. Merge displayed keys into your working file and preserve unrelated settings. For a fresh setup, download a full valid configuration below. Always back up your working file first and run <code>/rl reload</code> afterwards.</div>
+<div class="grid-3" style="margin-bottom:40px"><a class="card" href="/examples/local-machines.yml" download><span class="mini-label">COMPLETE YAML</span><h3>Local machines ↓</h3><p>Block + subchunk thresholds, with chunk and region scopes disabled.</p></a><a class="card" href="/examples/aggregate-region.yml" download><span class="mini-label">COMPLETE YAML</span><h3>Aggregate region ↓</h3><p>Region limit 1024 instead of shipped default 96.</p></a><a class="card" href="/examples/relaxed-pistons.yml" download><span class="mini-label">COMPLETE YAML</span><h3>Relaxed pistons ↓</h3><p>Piston and sticky piston base limits 12.</p></a></div>
+<section class="prose" id="local"><div class="eyebrow">EXAMPLE 01 / RECOMMENDED STARTING POINT</div><h2>Stop a compact lag machine without limiting a huge region</h2><p>Use the precise block and subchunk limits, while leaving the larger aggregates off. This is a <strong>suggested starting example</strong>, not the source default and not a guaranteed best value for every network.</p>
+<div class="codeblock"><div class="codehead"><span>config.yml — edited sections</span><button class="copy" type="button" aria-label="Copy config.yml — edited sections">Copy</button></div><pre><code>anti-lag:
+  preset: &quot;STRICT&quot;
+
+blocks:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations:
+    DEFAULT: 5
+    PISTON: 3
+    STICKY_PISTON: 3
+    OBSERVER: 8
+
+subchunks:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 96
+
+chunks:
+  enabled: false
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 1024
+
+regions:
+  enabled: false
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 96</code></pre></div>
+<p>The <code>blocks.max-activations</code> section shown is a <strong>partial material override</strong>. Keep the other material entries from your existing file unless you deliberately want their built-in/default behavior. Turning off chunks and regions does not turn off counting; those scopes still record telemetry.</p></section>
+<div class="divider"></div>
+<section class="prose" id="piston"><div class="eyebrow">EXAMPLE 02 / PROTECT NORMAL FARMS</div><h2>Allow more piston activity while keeping protection</h2><p>Sometimes a farm gets limited because one piston cycles often. Increase that individual material's base maximum. <strong>Other scopes must still have room</strong>, or they may block the same machine.</p>
+<div class="codeblock"><div class="codehead"><span>config.yml</span><button class="copy" type="button" aria-label="Copy config.yml">Copy</button></div><pre><code># Change these existing keys under blocks.max-activations:
+blocks:
+  max-activations:
+    PISTON: 12
+    STICKY_PISTON: 12</code></pre></div>
+<p>With <code>STRICT</code> and healthy TPS scaling enabled, a base limit of 12 becomes an effective 24. At degraded TPS it remains 12. Use the <a href="/calculator/">calculator</a> to explore.</p></section>
+<div class="divider"></div>
+<section class="prose" id="region"><div class="eyebrow">EXAMPLE 03 / REGION-WIDE LAG</div><h2>Protect a whole region from aggregate activity</h2><p>When multiple chunks collectively produce too much activity, region limiting can help. <strong>Start higher than a very restrictive region-wide threshold</strong> if you don't want neighboring farms affected.</p>
+<div class="codeblock"><div class="codehead"><span>config.yml</span><button class="copy" type="button" aria-label="Copy config.yml">Copy</button></div><pre><code>regions:
+  enabled: true
+  period:
+    duration-millis: 5000
+    sustain-millis: 2000
+    sliding: true
+  max-activations: 1024</code></pre></div>
+<p>This <strong>example value is intentionally not the shipped default</strong>: the source default is 96, and a region encompasses 1,024 chunks. Check your own load profile first; a higher max is more permissive.</p></section>
+<div class="divider"></div>
+<section class="prose" id="whitelist"><div class="eyebrow">EXAMPLE 04 / EXCEPTIONS</div><h2>Whitelist a safe machine or exclude a whole world</h2>
+<div class="codeblock"><div class="codehead"><span>config.yml</span><button class="copy" type="button" aria-label="Copy config.yml">Copy</button></div><pre><code>whitelist:
+  chunks:
+    - &quot;world/3/-2&quot;     # Chunk X=3, Z=-2 in world
+
+disabled-worlds:
+  - &quot;creative&quot;         # Entire creative world is not monitored</code></pre></div>
+<p>Use actual Bukkit world names and chunk coordinates. A <strong>whitelisted chunk</strong> still has activity recorded, but automatic limits do not block there. A <strong>disabled world</strong> skips all counting, blocking, effects and notifications.</p></section>
+<div class="divider"></div>
+<section class="prose" id="quarantine"><div class="eyebrow">EXAMPLE 05 / EMERGENCY ACTION</div><h2>Manually quarantine one chunk</h2>
+<div class="codeblock"><div class="codehead"><span>config.yml</span><button class="copy" type="button" aria-label="Copy config.yml">Copy</button></div><pre><code>quarantine:
+  manual-chunks:
+    - &quot;world/3/-2&quot;</code></pre></div>
+<p>This is a deliberate administrative restriction: it stays until removed. It overrides a whitelist entry for the same chunk. For temporary automatic restrictions, tune <code>max-activations</code>, <code>duration-millis</code>, and <code>sustain-millis</code> instead.</p></section>
+<div class="divider"></div>
+<section class="prose" id="tps"><div class="eyebrow">EXAMPLE 06 / PREDICTABLE MAXIMA</div><h2>Use fixed effective maxima regardless of TPS</h2>
+<div class="codeblock"><div class="codehead"><span>config.yml</span><button class="copy" type="button" aria-label="Copy config.yml">Copy</button></div><pre><code>anti-lag:
+  preset: &quot;STRICT&quot;
+  tps-scaling:
+    enabled: false
+    degraded-tps: 16.0
+    healthy-tps: 19.5
+    min-multiplier: 1.0
+    max-multiplier: 2.0</code></pre></div>
+<p>With <code>STRICT</code> and TPS scaling disabled, effective max is simply the base max. You are disabling automatic TPS responsiveness, not the limiter itself.</p>
+<div class="btn-row"><a href="/configuration/" class="button button-primary">Look up a setting →</a><a href="/commands/" class="button button-secondary">Apply with /rl reload</a></div></section>
+
+      <footer><span>© ArkFlame · RedstoneLimiter documentation</span><span>RedstoneLimiter 3.0.1 / configuration v7 · uploaded source snapshot Oct 8, 2026</span></footer>
+    </div></main>
+  </div>
+  <div id="search-panel" role="presentation" aria-hidden="true">
+    <div id="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <div id="search-head"><span id="search-title" class="mini-label">SEARCH</span><input id="search-input" autocomplete="off" placeholder="Search guides, settings, commands…" aria-label="Search documentation" /><button id="search-close" aria-label="Close search">Esc</button></div>
+      <div id="search-results" role="list"></div><div id="search-results-empty">No matching pages. Try “config”, “limits”, or “quarantine”.</div>
+    </div>
+  </div>
+  
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3 · Threshold and sustain block</title>
+<style>
+html,body{margin:0;background:#0e1116}
+.stage{width:min(100vw,1280px);aspect-ratio:16/9;margin:0 auto;position:relative;overflow:hidden}
+svg{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<div class="stage"><svg id="s" viewBox="0 0 1280 720" role="img" aria-label="3 · Threshold and sustain block"></svg></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('s');
+const C={bg:'#0e1116',panel:'#161b23',line:'#283041',fg:'#e6e9f0',muted:'#8b94a7',ok:'#4ade80',block:'#f87171',accent:'#60a5fa',warn:'#fbbf24'};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const easeOut=k=>1-Math.pow(1-k,3);
+function node(tag,attrs,parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in (attrs||{})) e.setAttribute(k,String(attrs[k]));
+  (parent||svg).appendChild(e);
+  return e;
+}
+function rect(x,y,w,h,a){return node('rect',Object.assign({x,y,width:w,height:h},a||{}));}
+function line(x1,y1,x2,y2,a){return node('line',Object.assign({x1,y1,x2,y2},a||{}));}
+function circle(cx,cy,r,a){return node('circle',Object.assign({cx,cy,r},a||{}));}
+function poly(pts,a){return node('polyline',Object.assign({points:pts.map(p=>p[0]+','+p[1]).join(' ')},a||{}));}
+function text(x,y,s,o){
+  o=o||{};
+  const e=node('text',{x,y,'font-size':o.size||18,'font-weight':o.weight||400,fill:o.fill||C.fg,
+    'font-family':o.mono?'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace':'system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+    'text-anchor':o.anchor||'start'});
+  e.textContent=s;
+  return e;
+}
+
+// Module 3: threshold plus sustain. Mirrors CircuitActivityEngine over-limit branch and ActivityState.isSustainBlocked.
+const LOOP=16;
+const W=5, SUS=2, MAXM=3;
+const ATT=[1.0,1.3,1.6,1.9,2.5,3.0,4.2,6.5,8.2,10.5];
+const SIM=(()=>{
+  let bu=-1;
+  return ATT.map(t=>{
+    const c=ATT.filter(a=>a<=t && a>t-W).length;
+    let st;
+    if(c>MAXM){ bu=Math.max(bu,t+SUS); st='over'; }
+    else if(t<bu){ st='sustain'; }
+    else { st='allowed'; }
+    return {t,c,st,bu};
+  });
+})();
+const XT=t=>80+t*70;
+const YC=c=>360-c*30;
+const countAt=t=>ATT.filter(a=>a<=t && a>t-W).length;
+function buAt(t){ let bu=-1; for(const s of SIM){ if(s.t<=t) bu=s.bu; } return bu; }
+function draw(t){
+  text(60,52,'3 · Threshold and sustain: over-limit attempts extend the block',{size:30,weight:700});
+  text(60,84,'max '+MAXM+' in a '+W+' s sliding window · sustain '+SUS+' s · demo values (shipped defaults: 5 s / 2 s / max per scope)',{size:16,fill:C.muted});
+
+  rect(80,130,1120,240,{rx:12,fill:C.panel});
+  line(80,YC(MAXM),1200,YC(MAXM),{stroke:C.warn,'stroke-dasharray':'8 6'});
+  text(1190,YC(MAXM)-8,'max '+MAXM,{size:15,fill:C.warn,anchor:'end'});
+  const pts=[];
+  for(let s=0;s<=16.0001;s+=0.05) pts.push([XT(s),YC(countAt(s))]);
+  poly(pts,{fill:'none',stroke:C.accent,'stroke-width':3});
+  for(const a of SIM){
+    const col=a.st==='allowed'?C.ok:a.st==='over'?C.block:C.warn;
+    circle(XT(a.t),YC(a.c),8,{fill:col,stroke:C.bg,'stroke-width':2});
+  }
+  text(96,150,'activations inside the last 5 s',{size:15,fill:C.muted});
+
+  text(80,398,'sustain deadline (blocked while amber)',{size:16,fill:C.muted});
+  rect(80,408,1120,34,{rx:8,fill:C.panel});
+  for(let s=0;s<16;s+=0.05){
+    if(s<buAt(s)) rect(XT(s),412,3.6,26,{fill:C.warn});
+  }
+
+  line(XT(t),130,XT(t),370,{stroke:C.fg,'stroke-width':2,'stroke-dasharray':'4 4'});
+  const last=SIM.filter(s=>s.t<=t).pop();
+  const c=countAt(t), bu=buAt(t);
+  const nextBlocked=t<bu;
+  text(80,488,'t = '+t.toFixed(1)+' s',{size:22,weight:600,mono:true});
+  text(80,528,'window count '+c+' / max '+MAXM,{size:20,mono:true,fill:c>MAXM?C.block:C.fg});
+  text(440,528,'last attempt: '+(last?last.st.toUpperCase():'—'),{size:20,mono:true,fill:!last?C.muted:last.st==='allowed'?C.ok:last.st==='over'?C.block:C.warn});
+  text(800,528,'sustain until: '+(bu>0?bu.toFixed(1)+' s':'—'),{size:20,mono:true,fill:C.muted});
+  text(80,568,'next attempt blocked now: '+(nextBlocked?'yes':'no'),{size:20,weight:600,fill:nextBlocked?C.block:C.ok});
+
+  circle(80,620,8,{fill:C.ok}); text(96,626,'allowed',{size:16,fill:C.muted});
+  circle(220,620,8,{fill:C.block}); text(236,626,'over limit · extends sustain',{size:16,fill:C.muted});
+  circle(480,620,8,{fill:C.warn}); text(496,626,'sustain · no extension',{size:16,fill:C.muted});
+  text(80,690,'Count is every attempt in (now − 5 s, now]. Blocked attempts are counted too. Only over-limit attempts extend the deadline.',{size:15,fill:C.muted});
+}
+
+window.renderAt=function(t){
+  svg.replaceChildren();
+  draw(((t%LOOP)+LOOP)%LOOP);
+};
+// Embedding bridge: pause offscreen animations and keep each frame isolated.
+const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+const embedded = window.parent !== window;
+let elapsedSeconds = LOOP * 0.5;
+let startedOnce = false;
+let running = false;
+let startedAt = 0;
+let frameHandle = 0;
+function frame(now) {
+  if (!running) return;
+  renderAt((elapsedSeconds + (now - startedAt) / 1000) % LOOP);
+  frameHandle = requestAnimationFrame(frame);
+}
+function playDiagram() {
+  if (running || window.__manual) return;
+  if (!startedOnce) {
+    elapsedSeconds = 0;
+    startedOnce = true;
+  }
+  running = true;
+  startedAt = performance.now();
+  frameHandle = requestAnimationFrame(frame);
+}
+function pauseDiagram() {
+  if (!running) return;
+  elapsedSeconds = (elapsedSeconds + (performance.now() - startedAt) / 1000) % LOOP;
+  running = false;
+  cancelAnimationFrame(frameHandle);
+  renderAt(elapsedSeconds);
+}
+// A mid-sequence frame is informative before scrolling or when motion is reduced.
+renderAt(elapsedSeconds);
+if (!embedded && !motionPreference.matches) playDiagram();
+window.addEventListener('message', (event) => {
+  if (!embedded || event.source !== window.parent) return;
+  const data = event.data;
+  if (!data || data.type !== 'redstonelimiter:playback') return;
+  if (data.play === true) playDiagram();
+  else if (data.play === false) pauseDiagram();
+});
+motionPreference.addEventListener('change', (event) => {
+  if (event.matches) {
+    pauseDiagram();
+    if (!startedOnce) renderAt(LOOP * 0.5);
+  } else if (!embedded) {
+    playDiagram();
+  }
+});
+
+</script>
+</body>
+</html>

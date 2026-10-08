@@ -1,0 +1,25 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+import Code from '../components/Code.astro';
+---
+<DocsLayout title="Getting started" description="Install RedstoneLimiter, understand the default config and start limiting Minecraft redstone machines safely.">
+<div class="page-head"><div class="eyebrow">START HERE / 5 MINUTES</div><h1 class="page-title">Getting started</h1><p class="lead">From your first install to your first useful limits. No YAML experience required.</p></div>
+<div class="prose">
+<h2 id="setup">1. Install and open the config <a class="anchor" href="#setup">#</a></h2>
+<ol><li>Install the RedstoneLimiter plugin JAR in your server's <code>plugins/</code> directory.</li><li>Restart your Minecraft server so the plugin generates its files.</li><li>Open <code>plugins/RedstoneLimiter/config.yml</code> with a text editor.</li><li>Make a backup of your working configuration before experimenting.</li></ol>
+<div class="callout info"><strong>Starting from an existing server?</strong> Don't replace a customized config with the default file. The plugin supports older configuration migration. Review your existing values before changing them.</div>
+<h2 id="first-setting">2. Read your first limit <a class="anchor" href="#first-setting">#</a></h2>
+<Code code={`blocks:\n  enabled: true\n  period:\n    duration-millis: 5000\n    sustain-millis: 2000\n    sliding: true\n  max-activations:\n    DEFAULT: 5\n    PISTON: 3`} />
+<p>This means the <strong>block limiter is active</strong>. An individual piston has a base limit of <strong>3 attempts over the last 5 seconds</strong>. The next attempt exceeds its base threshold. Temporary blocking lasts at least 2 seconds and can be extended by further over-limit attempts. Presets and TPS scaling can raise the actual allowed count.</p>
+<h2 id="scope">3. Decide what area to limit <a class="anchor" href="#scope">#</a></h2>
+<div class="grid-2"><div class="card"><div class="mini-label">PRECISE</div><h3>Block & subchunk</h3><p>Useful when one specific device or a compact machine is excessively active.</p></div><div class="card"><div class="mini-label">BROADER</div><h3>Chunk & region</h3><p>Catch many devices adding up; affects wider areas and can block unrelated machinery.</p></div></div>
+<p>A region here means <strong>32×32 chunks (512×512 blocks horizontally)</strong>, not one chunk or a Folia scheduler region. By default, the configured region limit is only 96 base activations over 5 seconds across the entire region. Read <a href="/how-it-works/">the spatial guide</a> before tightening it.</p>
+<h2 id="choose-preset">4. Choose a preset <a class="anchor" href="#choose-preset">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Preset</th><th>Base multiplier</th><th>Effect</th></tr></thead><tbody><tr><td><code>STRICT</code></td><td>1×</td><td>Uses your configured limit without preset relaxation.</td></tr><tr><td><code>BALANCED</code></td><td>1.5×</td><td>Raises allowed activations by 50% before rounding and TPS adjustment.</td></tr><tr><td><code>LENIENT</code></td><td>2×</td><td>Doubles the configured limit before TPS adjustment.</td></tr></tbody></table></div>
+<div class="callout"><strong>Important:</strong> TPS scaling is separately enabled by default. At healthy TPS, it may double allowed activations again. A base limit of 3 can therefore allow 6 activations under the STRICT preset at healthy TPS. <a href="/calculator/">Try the calculator.</a></div>
+<h2 id="save">5. Apply your changes and inspect problems <a class="anchor" href="#save">#</a></h2>
+<ol><li>Save <code>config.yml</code> with valid YAML indentation (spaces, not tabs).</li><li>Run <code>/rl reload</code> if you have <code>redstonelimiter.reload</code>.</li><li>Use <code>/rl gui</code> to inspect the in-game control panel, or <code>/rl chunk</code> to see statistics.</li><li>Watch blocked-activity notifications if you have <code>redstonelimiter.notify</code>.</li></ol>
+<p>The GUI offers chunk whitelist and <strong>manual quarantine</strong> controls. Never assume a machine is automatically permanently quarantined because it exceeded an activity threshold.</p>
+<div class="btn-row"><a href="/configuration/" class="button button-primary">Read the full config →</a><a href="/examples/" class="button button-secondary">See examples</a></div>
+</div>
+</DocsLayout>
